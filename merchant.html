@@ -246,7 +246,8 @@ const ALL_CATS = [
   {id:'xibei',name:'西北面'},{id:'gaijiao',name:'盖浇饭'},{id:'chaofan',name:'炒饭'},
   {id:'yuecai',name:'粤菜'},{id:'jiachang',name:'家常菜'},{id:'hanbaobao',name:'汉堡'},
   {id:'pisa',name:'披萨'},{id:'rihao',name:'日料'},{id:'huoguo',name:'火锅'},
-  {id:'shaokao',name:'烧烤'},{id:'tang',name:'汤粉'}
+  {id:'shaokao',name:'烧烤'},{id:'tang',name:'汤粉'},{id:'chayin',name:'茶饮'},
+  {id:'xiaochu',name:'小食'},{id:'kuaican',name:'快餐'}
 ];
 
 let uploadData = {facade:[], env:[], product:[]};
@@ -256,7 +257,7 @@ let selectedCats = [];
 function initCatChecks(){
   const box = document.getElementById('catChecks');
   box.innerHTML = ALL_CATS.map(c =>
-    `<label class="cat-check" onclick="toggleCat(this,'${c.id}')"><input type="checkbox" value="${c.id}"/>${c.name}</label>`
+    `<div class="cat-check" data-id="${c.id}" onclick="toggleCat(this,'${c.id}')">${c.name}</div>`
   ).join('');
 }
 
