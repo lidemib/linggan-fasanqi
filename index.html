@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>灵感发散器 — 今天吃什么</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    :root{
+      --brand:#FF6B35;
+      --brand-light:#FFF0EB;
+      --brand-dark:#D94F1E;
+      --teal:#1D9E75;
+      --teal-light:#E1F5EE;
+      --purple:#534AB7;
+      --purple-light:#EEEDFE;
+      --gray:#5F5E5A;
+      --border:#E8E6E0;
+      --bg:#FAFAF8;
+      --white:#FFFFFF;
+      --radius:14px;
+      --shadow:0 2px 12px rgba(0,0,0,0.08);
+    }
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif;
+      background:var(--bg);
+      min-height:100vh;
+      color:#2C2C2A;
+    }
+
+    /* 顶部栏 */
+    .topbar{
+      background:var(--white);
+      border-bottom:1px solid var(--border);
+      padding:16px 20px 12px;
+      position:sticky;top:0;z-index:100;
+    }
+    .topbar h1{font-size:18px;font-weight:600;color:var(--brand);}
+    .topbar p{font-size:12px;color:var(--gray);margin-top:2px;}
+
+    /* 面包屑 */
+    .breadcrumb{
+      display:flex;align-items:center;gap:6px;
+      padding:10px 20px;
+      font-size:12px;color:var(--gray);
+      overflow-x:auto;white-space:nowrap;
+    }
+    .breadcrumb span{cursor:pointer;color:var(--brand);}
+    .breadcrumb .sep{color:#ccc;}
+    .breadcrumb .current{color:var(--gray);cursor:default;}
+
+    /* 主内容 */
+    .main{padding:0 16px 32px;}
+
+    /* 区域标题 */
+    .section-title{
+      font-size:14px;font-weight:500;color:var(--gray);
+      margin:20px 0 12px;
+      display:flex;align-items:center;gap:6px;
+    }
+    .section-title::before{
+      content:'';display:inline-block;width:3px;height:14px;
+      background:var(--brand);border-radius:2px;
+    }
+
+    /* 品类卡片网格 */
+    .cat-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+    }
+    .cat-card{
+      background:var(--white);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:16px 10px 14px;
+      text-align:center;
+      cursor:pointer;
+      transition:all .15s;
+      position:relative;
+      overflow:hidden;
+    }
+    .cat-card:active{transform:scale(0.96);background:var(--brand-light);}
+    .cat-card .icon{font-size:28px;margin-bottom:6px;display:block;}
+    .cat-card .name{font-size:13px;font-weight:500;}
+    .cat-card .desc{font-size:11px;color:var(--gray);margin-top:2px;}
+    .cat-card.selected{
+      border-color:var(--brand);
+      background:var(--brand-light);
+    }
+    .cat-card.selected::after{
+      content:'';position:absolute;top:6px;right:6px;
+      width:8px;height:8px;border-radius:50%;
+      background:var(--brand);
+    }
+
+    /* 商家卡片 */
+    .shop-list{display:flex;flex-direction:column;gap:12px;}
+    .shop-card{
+      background:var(--white);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:16px;
+      cursor:pointer;
+      transition:all .15s;
+    }
+    .shop-card:active{transform:scale(0.98);}
+    .shop-header{display:flex;align-items:flex-start;gap:12px;}
+    .shop-logo{
+      width:52px;height:52px;border-radius:10px;
+      background:var(--brand-light);
+      display:flex;align-items:center;justify-content:center;
+      font-size:24px;flex-shrink:0;
+    }
+    .shop-info{flex:1;}
+    .shop-name{font-size:15px;font-weight:600;margin-bottom:3px;}
+    .shop-meta{font-size:12px;color:var(--gray);display:flex;gap:10px;flex-wrap:wrap;}
+    .rating{color:#F59E0B;}
+    .shop-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+    .tag{
+      font-size:11px;padding:2px 8px;border-radius:20px;
+      background:var(--teal-light);color:var(--teal);
+    }
+    .tag.promo{background:var(--brand-light);color:var(--brand);}
+    .tag.owner{background:var(--purple-light);color:var(--purple);}
+
+    /* 优惠券 */
+    .coupon-bar{
+      margin-top:12px;
+      background:linear-gradient(90deg,var(--brand-light),#fff0);
+      border:1px dashed var(--brand);
+      border-radius:8px;
+      padding:8px 12px;
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .coupon-bar .left{font-size:12px;color:var(--brand-dark);}
+    .coupon-bar .left strong{font-size:20px;font-weight:700;}
+    .coupon-bar .left span{font-size:11px;}
+    .coupon-btn{
+      background:var(--brand);color:#fff;
+      border:none;border-radius:20px;
+      padding:6px 14px;font-size:12px;font-weight:500;
+      cursor:pointer;white-space:nowrap;
+    }
+    .coupon-btn:active{background:var(--brand-dark);}
+    .coupon-btn.claimed{background:#ccc;pointer-events:none;}
+
+    /* 底部提示 */
+    .footer-tip{
+      text-align:center;font-size:11px;color:#aaa;
+      margin-top:32px;padding-bottom:20px;
+    }
+
+    /* 弹窗 */
+    .modal-mask{
+      position:fixed;inset:0;background:rgba(0,0,0,0.45);
+      z-index:200;display:flex;align-items:flex-end;
+      opacity:0;pointer-events:none;transition:opacity .2s;
+    }
+    .modal-mask.show{opacity:1;pointer-events:auto;}
+    .modal-box{
+      background:var(--white);width:100%;
+      border-radius:20px 20px 0 0;
+      padding:24px 20px 40px;
+      transform:translateY(100%);transition:transform .25s;
+    }
+    .modal-mask.show .modal-box{transform:translateY(0);}
+    .modal-title{font-size:16px;font-weight:600;margin-bottom:6px;}
+    .modal-sub{font-size:12px;color:var(--gray);margin-bottom:20px;}
+    .modal-coupon{
+      background:var(--brand);color:#fff;
+      border-radius:12px;padding:20px;
+      text-align:center;margin-bottom:16px;
+    }
+    .modal-coupon .amount{font-size:40px;font-weight:700;}
+    .modal-coupon .desc{font-size:12px;opacity:.85;margin-top:4px;}
+    .modal-coupon .code{
+      margin-top:12px;background:rgba(255,255,255,.2);
+      border-radius:6px;padding:6px 12px;
+      font-size:13px;letter-spacing:2px;font-family:monospace;
+    }
+    .modal-close-btn{
+      width:100%;background:var(--bg);border:1px solid var(--border);
+      border-radius:10px;padding:12px;font-size:14px;
+      cursor:pointer;font-weight:500;
+    }
+    .modal-close-btn:active{background:#eee;}
+
+    /* 随机按钮 */
+    .random-btn{
+      width:100%;margin:16px 0 0;
+      background:var(--brand);color:#fff;
+      border:none;border-radius:12px;
+      padding:14px;font-size:15px;font-weight:500;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
+    }
+    .random-btn:active{background:var(--brand-dark);}
+
+    /* 回首页按钮 */
+    .back-home{
+      display:flex;align-items:center;gap:4px;
+      font-size:13px;color:var(--brand);
+      cursor:pointer;margin:12px 0 0;
+    }
+    .back-home::before{content:'←';}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>灵感发散器</h1>
+  <p>今天吃什么，一键搞定</p>
+</div>
+
+<div class="breadcrumb" id="breadcrumb">
+  <span onclick="goHome()">首页</span>
+</div>
+
+<div class="main" id="main">
+  <!-- 内容由JS动态渲染 -->
+</div>
+
+<div class="modal-mask" id="modal">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-sub" id="modal-sub"></div>
+    <div class="modal-coupon" id="modal-coupon"></div>
+    <button class="modal-close-btn" onclick="closeModal()">我知道了，去店里消费</button>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  categories: [
+    { id:'mianshi', icon:'🍜', name:'面食', desc:'饺子·面条·馄饨', sub:[
+      { id:'jiaozi', icon:'🥟', name:'饺子', desc:'现包手工饺', sub:'shops', shopCat:'jiaozi'},
+      { id:'yunton', icon:'🍵', name:'云吞面', desc:'鲜虾·猪肉', sub:'shops', shopCat:'yunton'},
+      { id:'luosifen', icon:'🍢', name:'螺蛳粉', desc:'酸辣正宗', sub:'shops', shopCat:'luosifen'},
+      { id:'xibei', icon:'🍝', name:'西北面', desc:'拉面·刀削', sub:'shops', shopCat:'xibei'},
+    ]},
+    { id:'kuaican', icon:'🍱', name:'快餐', desc:'盖浇·套餐·炒饭', sub:[
+      { id:'gaijiao', icon:'🍚', name:'盖浇饭', desc:'荤素搭配', sub:'shops', shopCat:'gaijiao'},
+      { id:'chaofan', icon:'🍳', name:'炒饭', desc:'扬州·蛋炒', sub:'shops', shopCat:'chaofan'},
+    ]},
+    { id:'zhongcan', icon:'🥘', name:'中餐', desc:'粤菜·家常菜', sub:[
+      { id:'yuecai', icon:'🍲', name:'粤菜', desc:'清淡鲜美', sub:'shops', shopCat:'yuecai'},
+      { id:'jiachang', icon:'🥗', name:'家常菜', desc:'下饭神器', sub:'shops', shopCat:'jiachang'},
+    ]},
+    { id:'xican', icon:'🍔', name:'西餐', desc:'汉堡·披萨·意面', sub:[
+      { id:'hanbaobao', icon:'🍔', name:'汉堡', desc:'厚牛肉饼', sub:'shops', shopCat:'hanbaobao'},
+      { id:'pisa', icon:'🍕', name:'披萨', desc:'芝士拉丝', sub:'shops', shopCat:'pisa'},
+    ]},
+    { id:'zizhu', icon:'🍣', name:'自助', desc:'日料·火锅·烤肉', sub:[
+      { id:'rihao', icon:'🍱', name:'日料自助', desc:'刺身·寿司', sub:'shops', shopCat:'rihao'},
+      { id:'huoguo', icon:'🫕', name:'火锅', desc:'麻辣·清汤', sub:'shops', shopCat:'huoguo'},
+    ]},
+    { id:'xiaochu', icon:'🍜', name:'小吃', desc:'粉·汤·烧烤', sub:[
+      { id:'shaokao', icon:'🍢', name:'烧烤', desc:'撸串夜宵', sub:'shops', shopCat:'shaokao'},
+      { id:'tang', icon:'🍜', name:'汤粉', desc:'米粉·肠粉', sub:'shops', shopCat:'tang'},
+    ]},
+  ],
+
+  shops: [
+    {
+      id:'yuan-huafeng',
+      name:'袁记云饺·华丰店',
+      logo:'🥟',
+      rating:4.8,
+      reviews:326,
+      distance:'230m',
+      hours:'10:00-21:00',
+      address:'顺德华丰路XX号',
+      tags:['现包手工','无添加','堂取自取'],
+      isOwner:true,
+      cats:['jiaozi'],
+      coupon:{ amount:5, minSpend:25, code:'YJ-HF-2026', claimed:false }
+    },
+    {
+      id:'yuan-xingfu',
+      name:'袁记云饺·幸福店',
+      logo:'🥟',
+      rating:4.9,
+      reviews:412,
+      distance:'580m',
+      hours:'09:30-21:30',
+      address:'顺德幸福大道XX号',
+      tags:['现包手工','爆款推荐','月销500+'],
+      isOwner:true,
+      cats:['jiaozi'],
+      coupon:{ amount:5, minSpend:25, code:'YJ-XF-2026', claimed:false }
+    }
+  ]
+};
+
+// 状态
+let trail = []; // 面包屑路径
+
+function goHome(){
+  trail = [];
+  renderHome();
+}
+
+function renderBreadcrumb(){
+  const bc = document.getElementById('breadcrumb');
+  let html = '<span onclick="goHome()">首页</span>';
+  trail.forEach((item, i) => {
+    html += '<span class="sep">›</span>';
+    if(i < trail.length-1){
+      html += `<span onclick="goTrail(${i})">${item.name}</span>`;
+    } else {
+      html += `<span class="current">${item.name}</span>`;
+    }
+  });
+  bc.innerHTML = html;
+}
+
+function goTrail(idx){
+  trail = trail.slice(0, idx+1);
+  const item = trail[idx];
+  if(item.type === 'cat1') renderCat2(item.data);
+  else if(item.type === 'cat2') renderShops(item.data);
+}
+
+function renderHome(){
+  renderBreadcrumb();
+  const main = document.getElementById('main');
+  let html = '';
+
+  html += `<button class="random-btn" onclick="randomPick()">🎲 随机帮我选一家</button>`;
+  html += `<div class="section-title">选择想吃的大类</div>`;
+  html += `<div class="cat-grid">`;
+  DATA.categories.forEach(cat => {
+    html += `
+      <div class="cat-card" onclick="selectCat1('${cat.id}')">
+        <span class="icon">${cat.icon}</span>
+        <div class="name">${cat.name}</div>
+        <div class="desc">${cat.desc}</div>
+      </div>`;
+  });
+  html += `</div>`;
+  html += `<div class="footer-tip">已入驻 ${DATA.shops.length} 家顺德本地商家</div>`;
+  main.innerHTML = html;
+}
+
+function selectCat1(id){
+  const cat = DATA.categories.find(c => c.id === id);
+  if(!cat) return;
+  trail = [{type:'cat1', name:cat.name, data:cat}];
+  renderCat2(cat);
+}
+
+function renderCat2(cat){
+  renderBreadcrumb();
+  const main = document.getElementById('main');
+  let html = `<div class="back-home" onclick="goHome()">返回首页</div>`;
+  html += `<div class="section-title">${cat.name} — 再细选一下</div>`;
+  html += `<div class="cat-grid">`;
+  cat.sub.forEach(sub => {
+    const shopCount = DATA.shops.filter(s => s.cats.includes(sub.id) || s.cats.includes(sub.shopCat)).length;
+    html += `
+      <div class="cat-card" onclick="selectCat2('${sub.id}')">
+        <span class="icon">${sub.icon}</span>
+        <div class="name">${sub.name}</div>
+        <div class="desc">${sub.desc}</div>
+        ${shopCount > 0 ? `<div class="desc" style="color:var(--brand);margin-top:4px;">${shopCount}家可选</div>` : ''}
+      </div>`;
+  });
+  html += `</div>`;
+  main.innerHTML = html;
+}
+
+function selectCat2(id){
+  const allSubs = DATA.categories.flatMap(c => c.sub);
+  const sub = allSubs.find(s => s.id === id);
+  if(sub){
+    const lastTrail = trail[trail.length-1];
+    if(!lastTrail || lastTrail.type !== 'cat2'){
+      trail.push({type:'cat2', name:sub.name, data:sub});
+    }
+  }
+  renderShops(sub);
+}
+
+function renderShops(sub){
+  renderBreadcrumb();
+  const catId = sub ? sub.id : null;
+  const shops = catId
+    ? DATA.shops.filter(s => s.cats.includes(catId))
+    : DATA.shops;
+
+  const main = document.getElementById('main');
+  let html = `<div class="back-home" onclick="history.back ? goTrail(trail.length-2) : goHome()">返回上一步</div>`;
+
+  if(shops.length === 0){
+    html += `<div style="text-align:center;padding:60px 20px;color:var(--gray);">
+      <div style="font-size:40px;margin-bottom:12px;">🔍</div>
+      <div style="font-size:14px;">暂无入驻商家，敬请期待</div>
+    </div>`;
+    main.innerHTML = html;
+    return;
+  }
+
+  html += `<div class="section-title">附近商家 (${shops.length}家)</div>`;
+  html += `<div class="shop-list">`;
+
+  shops.forEach(shop => {
+    const couponClaimed = shop.coupon && shop.coupon.claimed;
+    html += `
+      <div class="shop-card">
+        <div class="shop-header">
+          <div class="shop-logo">${shop.logo}</div>
+          <div class="shop-info">
+            <div class="shop-name">${shop.name}</div>
+            <div class="shop-meta">
+              <span class="rating">★ ${shop.rating}</span>
+              <span>${shop.reviews}条评价</span>
+              <span>📍${shop.distance}</span>
+              <span>🕐${shop.hours}</span>
+            </div>
+            <div class="shop-tags">
+              ${shop.isOwner ? '<span class="tag owner">自营品牌</span>' : ''}
+              ${shop.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+        ${shop.coupon ? `
+        <div class="coupon-bar">
+          <div class="left">
+            <strong>${shop.coupon.amount}</strong><span>元券 · 满${shop.coupon.minSpend}可用</span>
+          </div>
+          <button class="coupon-btn ${couponClaimed?'claimed':''}" 
+            onclick="claimCoupon('${shop.id}')">
+            ${couponClaimed ? '已领取' : '立即领券'}
+          </button>
+        </div>` : ''}
+      </div>`;
+  });
+
+  html += `</div>`;
+  html += `<div class="footer-tip">更多商家持续入驻中 · 顺德本地优选</div>`;
+  main.innerHTML = html;
+}
+
+function claimCoupon(shopId){
+  const shop = DATA.shops.find(s => s.id === shopId);
+  if(!shop || !shop.coupon || shop.coupon.claimed) return;
+  shop.coupon.claimed = true;
+
+  // 显示弹窗
+  document.getElementById('modal-title').textContent = `恭喜领取成功！`;
+  document.getElementById('modal-sub').textContent = `进店消费时出示二维码，商家扫码核销即可`;
+  document.getElementById('modal-coupon').innerHTML = `
+    <div style="font-size:13px;opacity:.85;margin-bottom:4px;">${shop.name}</div>
+    <div class="amount">¥${shop.coupon.amount}</div>
+    <div class="desc">满${shop.coupon.minSpend}元可用 · 当日有效</div>
+    <div class="code">${shop.coupon.code}</div>
+  `;
+
+  const modal = document.getElementById('modal');
+  modal.classList.add('show');
+
+  // 刷新商家列表按钮状态
+  const btns = document.querySelectorAll('.coupon-btn');
+  btns.forEach(btn => {
+    if(btn.getAttribute('onclick') === `claimCoupon('${shopId}')`){
+      btn.textContent = '已领取';
+      btn.classList.add('claimed');
+    }
+  });
+}
+
+function closeModal(){
+  document.getElementById('modal').classList.remove('show');
+}
+
+function randomPick(){
+  // 随机从有商家的品类里选一个商家
+  const shopsWithCoupon = DATA.shops.filter(s => s.coupon);
+  if(shopsWithCoupon.length === 0) return;
+  const shop = shopsWithCoupon[Math.floor(Math.random() * shopsWithCoupon.length)];
+  
+  // 直接跳到商家卡片
+  trail = [];
+  renderBreadcrumb();
+  const main = document.getElementById('main');
+  let html = `<div class="back-home" onclick="goHome()">返回首页</div>`;
+  html += `<div class="section-title">为你随机推荐 🎲</div>`;
+  html += `<div class="shop-list">`;
+  const couponClaimed = shop.coupon && shop.coupon.claimed;
+  html += `
+    <div class="shop-card">
+      <div class="shop-header">
+        <div class="shop-logo">${shop.logo}</div>
+        <div class="shop-info">
+          <div class="shop-name">${shop.name}</div>
+          <div class="shop-meta">
+            <span class="rating">★ ${shop.rating}</span>
+            <span>${shop.reviews}条评价</span>
+            <span>📍${shop.distance}</span>
+            <span>🕐${shop.hours}</span>
+          </div>
+          <div class="shop-tags">
+            ${shop.isOwner ? '<span class="tag owner">自营品牌</span>' : ''}
+            ${shop.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+      ${shop.coupon ? `
+      <div class="coupon-bar">
+        <div class="left">
+          <strong>${shop.coupon.amount}</strong><span>元券 · 满${shop.coupon.minSpend}可用</span>
+        </div>
+        <button class="coupon-btn ${couponClaimed?'claimed':''}" 
+          onclick="claimCoupon('${shop.id}')">
+          ${couponClaimed ? '已领取' : '立即领券'}
+        </button>
+      </div>` : ''}
+    </div>`;
+  html += `</div>`;
+  html += `<button class="random-btn" onclick="randomPick()" style="margin-top:12px;">再换一个</button>`;
+  main.innerHTML = html;
+}
+
+// 点击遮罩关闭弹窗
+document.getElementById('modal').addEventListener('click', function(e){
+  if(e.target === this) closeModal();
+});
+
+// 初始化
+renderHome();
+</script>
+</body>
+</html>
