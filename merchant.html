@@ -340,14 +340,30 @@ document.getElementById('shopDesc').addEventListener('input',function(){
 function submitForm(){
   if(selectedCats.length===0){alert('请至少选择一个品类');return;}
 
+  // 收集所有优惠券（兼容动态添加的券）
+  const couponItems = document.querySelectorAll('#couponList .coupon-item');
   const coupons = [];
-  document.querySelectorAll('.coupon-item').forEach(item => {
-    const amt = item.querySelector('.coupon-amount').value;
-    const min = item.querySelector('.coupon-min').value;
-    const desc = item.querySelector('.coupon-desc').value;
-    if(amt && min) coupons.push({amount:Number(amt), minSpend:Number(min), desc:desc||'全场通用'});
+  couponItems.forEach((item, idx) => {
+    const amtInput = item.querySelector('input[type="number"]');
+    const allInputs = item.querySelectorAll('input[type="number"]');
+    const amt = allInputs[0] ? allInputs[0].value.trim() : '';
+    const min = allInputs[1] ? allInputs[1].value.trim() : '';
+    const descInput = item.querySelector('input:not([type="number"])');
+    const desc = descInput ? descInput.value.trim() : '';
+    
+    console.log('券'+(idx+1)+':', amt, min, '|', JSON.stringify({amt,min,descLen:(desc||'').length}));
+    if(amt !== '' && min !== '') coupons.push({amount:Number(amt), minSpend:Number(min), desc:desc||'全场通用'});
   });
-  if(coupons.length===0){alert('请至少设置1张优惠券');return;}
+  console.log('共收集到', coupons.length, '张有效券');
+  
+  if(coupons.length===0){
+    alert('请至少设置1张优惠券（需填写金额和门槛）');
+    // 高亮优惠券区域
+    document.getElementById('couponList').scrollIntoView({behavior:'smooth'});
+    document.getElementById('couponList').style.outline = '2px solid #E24B4A';
+    setTimeout(() => document.getElementById('couponList').style.outline='',2000);
+    return;
+  }
 
   const shopData = {
     id: 'shop-' + Date.now(),
