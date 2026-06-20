@@ -49,8 +49,21 @@
     .breadcrumb .sep{color:#ccc;}
     .breadcrumb .current{color:var(--gray);cursor:default;}
 
-    /* 主内容 */
-    .main{padding:0 16px 32px;}
+    /* 底部导航 */
+    .bottom-nav{
+      position:fixed;bottom:0;left:0;right:0;
+      background:var(--white);border-top:1px solid var(--border);
+      display:flex;z-index:100;padding:6px 0 env(safe-area-inset-bottom,8px);
+    }
+    .nav-item{
+      flex:1;text-align:center;padding:6px 0;cursor:pointer;
+      font-size:10px;color:var(--gray);text-decoration:none;
+      transition:color .15s;
+    }
+    .nav-item .nav-icon{font-size:20px;display:block;margin-bottom:2px;}
+    .nav-item.active,.nav-item:active{color:var(--brand);}
+
+    .main{padding:0 16px 80px;}
 
     /* 区域标题 */
     .section-title{
@@ -148,7 +161,7 @@
     /* 底部提示 */
     .footer-tip{
       text-align:center;font-size:11px;color:#aaa;
-      margin-top:32px;padding-bottom:20px;
+      margin-top:32px;padding-bottom:10px;
     }
 
     /* 弹窗 */
@@ -229,6 +242,21 @@
   </div>
 </div>
 
+<div class="bottom-nav">
+  <a class="nav-item active" href="index.html">
+    <span class="nav-icon">🏠</span>首页
+  </a>
+  <a class="nav-item" href="merchant.html">
+    <span class="nav-icon">🏪</span>商家入驻
+  </a>
+  <a class="nav-item" href="merchant-dashboard.html">
+    <span class="nav-icon">⚙️</span>商家后台
+  </a>
+  <a class="nav-item" href="admin.html">
+    <span class="nav-icon">🛡️</span>管理
+  </a>
+</div>
+
 <script>
 const DATA = {
   categories: [
@@ -294,6 +322,35 @@ const DATA = {
 
 // 状态
 let trail = []; // 面包屑路径
+
+// 加载已审核通过的商家（来自localStorage）
+function loadApprovedShops(){
+  const saved = JSON.parse(localStorage.getItem('lgfsq_shops') || '[]');
+  const approved = saved.filter(s => s.status === 'approved');
+  approved.forEach(shop => {
+    // 避免重复添加
+    if(!DATA.shops.find(s => s.id === shop.id)){
+      DATA.shops.push({
+        id: shop.id,
+        name: shop.name,
+        logo: '🏪',
+        rating: 4.5 + Math.random()*0.5,
+        reviews: Math.floor(Math.random()*200+50),
+        distance: Math.floor(Math.random()*900+100) + 'm',
+        hours: shop.hours || '10:00-22:00',
+        address: shop.address,
+        tags: (shop.cats||[]).slice(0,3),
+        isOwner: false,
+        cats: shop.cats || [],
+        coupon: shop.coupons && shop.coupons.length > 0
+          ? {amount: shop.coupons[0].amount, minSpend: shop.coupons[0].minSpend, code: 'CP-'+shop.id.slice(-6).toUpperCase(), claimed:false}
+          : null,
+        photos: shop.photos || {}
+      });
+    }
+  });
+}
+loadApprovedShops();
 
 function goHome(){
   trail = [];

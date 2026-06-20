@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>管理审核 — 灵感发散器</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    :root{
+      --brand:#FF6B35;--brand-light:#FFF0EB;--brand-dark:#D94F1E;
+      --teal:#1D9E75;--teal-light:#E1F5EE;
+      --purple:#534AB7;--purple-light:#EEEDFE;
+      --red:#E24B4A;--red-light:#FCEBEB;
+      --gray:#5F5E5A;--border:#E8E6E0;--bg:#FAFAF8;--white:#FFFFFF;
+      --radius:14px;
+    }
+    body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif;background:var(--bg);min-height:100vh;color:#2C2C2A;}
+
+    .topbar{background:var(--white);border-bottom:1px solid var(--border);padding:16px 20px 12px;position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:10px;}
+    .topbar .back{font-size:18px;color:var(--brand);cursor:pointer;text-decoration:none;}
+    .topbar h1{font-size:18px;font-weight:600;color:var(--purple);}
+    .topbar .badge{
+      background:var(--brand);color:#fff;font-size:11px;
+      padding:2px 8px;border-radius:10px;margin-left:4px;
+    }
+
+    .main{padding:16px 16px 40px;}
+
+    .card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;}
+
+    .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+    .stat{background:var(--bg);border-radius:10px;padding:12px;text-align:center;}
+    .stat .num{font-size:22px;font-weight:700;}
+    .stat .num.pending-num{color:#854F0B;}
+    .stat .num.approved-num{color:var(--teal);}
+    .stat .num.total-num{color:var(--purple);}
+    .stat .lbl{font-size:11px;color:var(--gray);margin-top:2px;}
+
+    .shop-card{
+      background:var(--white);border:1px solid var(--border);
+      border-radius:var(--radius);padding:16px;margin-bottom:12px;
+    }
+    .shop-card.pending-card{border-left:3px solid #EF9F27;}
+    .shop-card.approved-card{border-left:3px solid var(--teal);}
+    .shop-card.rejected-card{border-left:3px solid var(--red);}
+
+    .shop-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+    .shop-logo-sm{
+      width:40px;height:40px;border-radius:8px;background:var(--brand-light);
+      display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;
+    }
+    .shop-title{font-size:14px;font-weight:600;}
+    .shop-sub{font-size:12px;color:var(--gray);}
+
+    .status-tag{
+      display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:500;
+    }
+    .status-tag.pending{background:#FAEEDA;color:#854F0B;}
+    .status-tag.approved{background:var(--teal-light);color:var(--teal);}
+    .status-tag.rejected{background:var(--red-light);color:var(--red);}
+
+    .photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0;}
+    .photo-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;background:var(--border);}
+
+    .info-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--bg);}
+    .info-row .k{color:var(--gray);}
+    .info-row .v{font-weight:500;}
+
+    .coupon-tag{
+      display:inline-block;font-size:11px;padding:3px 8px;border-radius:6px;
+      background:var(--brand-light);color:var(--brand);margin:2px;
+    }
+
+    .btn-row{display:flex;gap:8px;margin-top:12px;}
+    .btn{
+      flex:1;padding:10px;border:none;border-radius:8px;font-size:13px;
+      font-weight:500;cursor:pointer;text-align:center;
+    }
+    .btn.approve{background:var(--teal);color:#fff;}
+    .btn.approve:active{background:#0F6E56;}
+    .btn.reject{background:var(--red-light);color:var(--red);}
+    .btn.reject:active{background:#F7C1C1;}
+    .btn.edit{background:var(--purple-light);color:var(--purple);}
+    .btn.offline{background:var(--bg);color:var(--gray);border:1px solid var(--border);}
+
+    .empty{text-align:center;padding:40px;color:var(--gray);font-size:13px;}
+
+    .filter-bar{display:flex;gap:8px;margin-bottom:14px;}
+    .filter-btn{
+      padding:6px 14px;border:1px solid var(--border);border-radius:20px;
+      background:var(--bg);font-size:12px;cursor:pointer;transition:all .15s;
+    }
+    .filter-btn.active{border-color:var(--purple);background:var(--purple-light);color:var(--purple);}
+
+    .section-label{font-size:13px;font-weight:500;color:var(--gray);margin:14px 0 8px;display:flex;align-items:center;gap:6px;}
+    .section-label::before{content:'';display:inline-block;width:3px;height:12px;background:var(--purple);border-radius:2px;}
+
+    .detail-modal{
+      position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;
+      display:none;align-items:flex-end;
+    }
+    .detail-modal.show{display:flex;}
+    .detail-box{
+      background:var(--white);width:100%;max-height:85vh;
+      border-radius:20px 20px 0 0;padding:20px 16px 40px;overflow-y:auto;
+    }
+    .detail-close{
+      display:block;width:100%;padding:12px;border:1px solid var(--border);
+      border-radius:10px;background:var(--bg);font-size:14px;cursor:pointer;
+      margin-top:16px;text-align:center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back" href="index.html">←</a>
+  <h1>管理后台</h1>
+  <span class="badge" id="pendingBadge">0</span>
+</div>
+
+<div class="main" id="main"></div>
+
+<div class="detail-modal" id="detailModal">
+  <div class="detail-box" id="detailContent"></div>
+</div>
+
+<script>
+function getShops(){return JSON.parse(localStorage.getItem('lgfsq_shops')||'[]');}
+function saveShops(shops){localStorage.setItem('lgfsq_shops',JSON.stringify(shops));}
+
+let currentFilter = 'all';
+
+function render(){
+  const shops = getShops();
+  const pending = shops.filter(s=>s.status==='pending');
+  const approved = shops.filter(s=>s.status==='approved');
+  const rejected = shops.filter(s=>s.status==='rejected');
+
+  document.getElementById('pendingBadge').textContent = pending.length;
+
+  let filtered = shops;
+  if(currentFilter==='pending') filtered = pending;
+  else if(currentFilter==='approved') filtered = approved;
+  else if(currentFilter==='rejected') filtered = rejected;
+
+  const main = document.getElementById('main');
+  let html = '';
+
+  html += `<div class="stats-row">
+    <div class="stat"><div class="num pending-num">${pending.length}</div><div class="lbl">待审核</div></div>
+    <div class="stat"><div class="num approved-num">${approved.length}</div><div class="lbl">已通过</div></div>
+    <div class="stat"><div class="num total-num">${shops.length}</div><div class="lbl">总入驻</div></div>
+  </div>`;
+
+  html += `<div class="filter-bar">
+    <button class="filter-btn ${currentFilter==='all'?'active':''}" onclick="setFilter('all')">全部</button>
+    <button class="filter-btn ${currentFilter==='pending'?'active':''}" onclick="setFilter('pending')">待审核</button>
+    <button class="filter-btn ${currentFilter==='approved'?'active':''}" onclick="setFilter('approved')">已通过</button>
+    <button class="filter-btn ${currentFilter==='rejected'?'active':''}" onclick="setFilter('rejected')">未通过</button>
+  </div>`;
+
+  if(filtered.length===0){
+    html += `<div class="empty">${currentFilter==='all'?'暂无商家入驻':'该分类下暂无商家'}</div>`;
+  } else {
+    filtered.forEach(shop => {
+      const statusClass = shop.status==='pending'?'pending-card':shop.status==='approved'?'approved-card':'rejected-card';
+      const statusTag = shop.status==='pending'?'pending':shop.status==='approved'?'approved':'rejected';
+      const statusText = shop.status==='pending'?'待审核':shop.status==='approved'?'已通过':'未通过';
+
+      html += `<div class="shop-card ${statusClass}">
+        <div class="shop-header">
+          <div class="shop-logo-sm">🏪</div>
+          <div>
+            <div class="shop-title">${shop.name} <span class="status-tag ${statusTag}">${statusText}</span></div>
+            <div class="shop-sub">${shop.address || ''} · ${shop.phone || ''}</div>
+          </div>
+        </div>`;
+
+      // 照片缩略图
+      if(shop.photos){
+        const allPhotos = [...(shop.photos.facade||[]), ...(shop.photos.env||[]), ...(shop.photos.product||[])];
+        if(allPhotos.length > 0){
+          html += `<div class="photo-grid">`;
+          allPhotos.slice(0,6).forEach(src => { html += `<img src="${src}"/>`; });
+          html += `</div>`;
+        }
+      }
+
+      // 基本信息
+      html += `<div class="info-row"><span class="k">营业时间</span><span class="v">${shop.hours||'未填写'}</span></div>`;
+      html += `<div class="info-row"><span class="k">人均消费</span><span class="v">¥${shop.avgSpend||'-'}</span></div>`;
+      html += `<div class="info-row"><span class="k">品类</span><span class="v">${(shop.cats||[]).join('、')||'-'}</span></div>`;
+
+      // 优惠券
+      if(shop.coupons && shop.coupons.length > 0){
+        html += `<div style="margin-top:8px;">`;
+        shop.coupons.forEach(c => {
+          html += `<span class="coupon-tag">${c.amount}元券·满${c.minSpend}可用</span>`;
+        });
+        html += `</div>`;
+      }
+
+      // 操作按钮
+      html += `<div class="btn-row">`;
+      if(shop.status === 'pending'){
+        html += `<button class="btn approve" onclick="approveShop('${shop.id}')">通过</button>`;
+        html += `<button class="btn reject" onclick="rejectShop('${shop.id}')">驳回</button>`;
+      } else if(shop.status === 'approved'){
+        html += `<button class="btn offline" onclick="offlineShop('${shop.id}')">下架</button>`;
+      } else {
+        html += `<button class="btn approve" onclick="approveShop('${shop.id}')">重新通过</button>`;
+      }
+      html += `<button class="btn edit" onclick="viewDetail('${shop.id}')">详情</button>`;
+      html += `</div>`;
+
+      html += `</div>`;
+    });
+  }
+
+  main.innerHTML = html;
+}
+
+function setFilter(f){currentFilter=f;render();}
+
+function approveShop(id){
+  const shops = getShops();
+  const shop = shops.find(s=>s.id===id);
+  if(!shop) return;
+  shop.status = 'approved';
+  saveShops(shops);
+  render();
+}
+
+function rejectShop(id){
+  const shops = getShops();
+  const shop = shops.find(s=>s.id===id);
+  if(!shop) return;
+  shop.status = 'rejected';
+  saveShops(shops);
+  render();
+}
+
+function offlineShop(id){
+  if(!confirm('确定下架该商家？')) return;
+  const shops = getShops();
+  const shop = shops.find(s=>s.id===id);
+  if(!shop) return;
+  shop.status = 'rejected';
+  saveShops(shops);
+  render();
+}
+
+function viewDetail(id){
+  const shops = getShops();
+  const shop = shops.find(s=>s.id===id);
+  if(!shop) return;
+
+  let html = `<h3 style="font-size:16px;font-weight:600;margin-bottom:12px;">${shop.name}</h3>`;
+
+  html += `<div class="info-row"><span class="k">联系人</span><span class="v">${shop.contact||'-'}</span></div>`;
+  html += `<div class="info-row"><span class="k">电话</span><span class="v">${shop.phone||'-'}</span></div>`;
+  html += `<div class="info-row"><span class="k">地址</span><span class="v">${shop.address||'-'}</span></div>`;
+  html += `<div class="info-row"><span class="k">营业时间</span><span class="v">${shop.hours||'-'}</span></div>`;
+  html += `<div class="info-row"><span class="k">人均消费</span><span class="v">¥${shop.avgSpend||'-'}</span></div>`;
+  html += `<div class="info-row"><span class="k">品类</span><span class="v">${(shop.cats||[]).join('、')||'-'}</span></div>`;
+  html += `<div class="info-row"><span class="k">提交时间</span><span class="v">${shop.createdAt ? new Date(shop.createdAt).toLocaleString('zh-CN') : '-'}</span></div>`;
+
+  if(shop.description){
+    html += `<div style="margin-top:10px;font-size:13px;color:var(--gray);line-height:1.6;">${shop.description}</div>`;
+  }
+
+  // 照片
+  if(shop.photos){
+    if(shop.photos.facade && shop.photos.facade.length > 0){
+      html += `<div class="section-label">门头照</div><div class="photo-grid">`;
+      shop.photos.facade.forEach(src => {html += `<img src="${src}"/>`;});
+      html += `</div>`;
+    }
+    if(shop.photos.env && shop.photos.env.length > 0){
+      html += `<div class="section-label">环境照</div><div class="photo-grid">`;
+      shop.photos.env.forEach(src => {html += `<img src="${src}"/>`;});
+      html += `</div>`;
+    }
+    if(shop.photos.product && shop.photos.product.length > 0){
+      html += `<div class="section-label">菜品照</div><div class="photo-grid">`;
+      shop.photos.product.forEach(src => {html += `<img src="${src}"/>`;});
+      html += `</div>`;
+    }
+  }
+
+  // 优惠券
+  if(shop.coupons && shop.coupons.length > 0){
+    html += `<div class="section-label">优惠券</div>`;
+    shop.coupons.forEach(c => {
+      html += `<span class="coupon-tag">${c.amount}元券·满${c.minSpend}可用·${c.desc||'全场通用'}</span>`;
+    });
+  }
+
+  html += `<button class="detail-close" onclick="closeDetail()">关闭</button>`;
+
+  document.getElementById('detailContent').innerHTML = html;
+  document.getElementById('detailModal').classList.add('show');
+}
+
+function closeDetail(){
+  document.getElementById('detailModal').classList.remove('show');
+}
+
+document.getElementById('detailModal').addEventListener('click',function(e){
+  if(e.target===this) closeDetail();
+});
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>商家后台 — 灵感发散器</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    :root{
+      --brand:#FF6B35;--brand-light:#FFF0EB;--brand-dark:#D94F1E;
+      --teal:#1D9E75;--teal-light:#E1F5EE;
+      --purple:#534AB7;--purple-light:#EEEDFE;
+      --red:#E24B4A;--red-light:#FCEBEB;
+      --gray:#5F5E5A;--border:#E8E6E0;--bg:#FAFAF8;--white:#FFFFFF;
+      --radius:14px;
+    }
+    body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif;background:var(--bg);min-height:100vh;color:#2C2C2A;}
+
+    .topbar{background:var(--white);border-bottom:1px solid var(--border);padding:16px 20px 12px;position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:10px;}
+    .topbar .back{font-size:18px;color:var(--brand);cursor:pointer;text-decoration:none;}
+    .topbar h1{font-size:18px;font-weight:600;color:var(--brand);}
+
+    .main{padding:16px 16px 40px;}
+
+    .card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;}
+
+    .status-bar{
+      display:flex;align-items:center;gap:8px;
+      padding:10px 14px;border-radius:8px;font-size:13px;font-weight:500;
+      margin-bottom:14px;
+    }
+    .status-bar.pending{background:#FAEEDA;color:#854F0B;}
+    .status-bar.approved{background:var(--teal-light);color:var(--teal);}
+    .status-bar.rejected{background:var(--red-light);color:var(--red);}
+    .status-bar .dot{width:8px;height:8px;border-radius:50%;background:currentColor;}
+
+    .shop-header-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+    .shop-logo-edit{
+      width:56px;height:56px;border-radius:12px;background:var(--brand-light);
+      display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;
+    }
+    .shop-header-info h2{font-size:16px;font-weight:600;}
+    .shop-header-info p{font-size:12px;color:var(--gray);margin-top:2px;}
+
+    label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(--gray);}
+    label .req{color:var(--brand);}
+
+    input,select,textarea{
+      width:100%;padding:10px 12px;border:1px solid var(--border);
+      border-radius:8px;font-size:14px;background:var(--bg);
+      outline:none;transition:border .15s;font-family:inherit;
+    }
+    input:focus,select:focus,textarea:focus{border-color:var(--brand);}
+    textarea{resize:vertical;min-height:60px;}
+
+    .form-row{margin-bottom:12px;}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+    .upload-area{
+      border:2px dashed var(--border);border-radius:10px;
+      padding:16px;text-align:center;cursor:pointer;
+      transition:all .15s;background:var(--bg);position:relative;
+    }
+    .upload-area:active{border-color:var(--brand);background:var(--brand-light);}
+    .upload-area .plus{font-size:24px;color:var(--gray);display:block;margin-bottom:2px;}
+    .upload-area .hint{font-size:11px;color:var(--gray);}
+    .upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+    .upload-preview{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;}
+    .upload-preview .thumb{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--border);}
+    .upload-preview .thumb img{width:100%;height:100%;object-fit:cover;}
+    .upload-preview .thumb .del{
+      position:absolute;top:3px;right:3px;width:18px;height:18px;
+      border-radius:50%;background:rgba(0,0,0,.5);color:#fff;
+      font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;
+    }
+
+    .coupon-item{
+      background:var(--brand-light);border-radius:10px;padding:12px;margin-bottom:8px;
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .coupon-item .left{display:flex;align-items:center;gap:8px;}
+    .coupon-item .amt{font-size:20px;font-weight:700;color:var(--brand);}
+    .coupon-item .info{font-size:12px;color:var(--gray);}
+    .coupon-item .del-btn{color:#999;font-size:16px;cursor:pointer;padding:4px;}
+
+    .add-coupon-btn{
+      width:100%;padding:10px;border:1px dashed var(--brand);border-radius:8px;
+      background:transparent;color:var(--brand);font-size:13px;cursor:pointer;margin-top:8px;
+    }
+
+    .save-btn{
+      width:100%;padding:14px;border:none;border-radius:12px;
+      background:var(--brand);color:#fff;font-size:15px;font-weight:500;
+      cursor:pointer;margin-top:16px;
+    }
+    .save-btn:active{background:var(--brand-dark);}
+
+    .tabs{display:flex;gap:0;margin-bottom:14px;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+    .tab{
+      flex:1;padding:10px;text-align:center;font-size:13px;font-weight:500;
+      cursor:pointer;background:var(--bg);transition:all .15s;border:none;
+    }
+    .tab.active{background:var(--brand);color:#fff;}
+
+    .tab-content{display:none;}
+    .tab-content.active{display:block;}
+
+    .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+    .stat-card{background:var(--bg);border-radius:10px;padding:14px;text-align:center;}
+    .stat-card .num{font-size:24px;font-weight:700;color:var(--brand);}
+    .stat-card .lbl{font-size:11px;color:var(--gray);margin-top:2px;}
+
+    .empty{text-align:center;padding:40px;color:var(--gray);font-size:13px;}
+
+    .login-box{padding:40px 20px;text-align:center;}
+    .login-box h2{font-size:18px;margin-bottom:8px;}
+    .login-box p{font-size:13px;color:var(--gray);margin-bottom:20px;}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back" href="index.html">←</a>
+  <h1>商家后台</h1>
+</div>
+
+<div class="main" id="main">
+  <!-- 内容由JS动态渲染 -->
+</div>
+
+<script>
+function getShops(){
+  return JSON.parse(localStorage.getItem('lgfsq_shops') || '[]');
+}
+function saveShops(shops){
+  localStorage.setItem('lgfsq_shops', JSON.stringify(shops));
+}
+
+// 简易登录：通过手机号匹配
+let currentShopId = null;
+
+function renderLogin(){
+  const main = document.getElementById('main');
+  main.innerHTML = `
+    <div class="login-box">
+      <div style="font-size:48px;margin-bottom:12px;">🏪</div>
+      <h2>商家登录</h2>
+      <p>输入入驻时填写的手机号进入后台</p>
+      <div class="card" style="text-align:left;">
+        <div class="form-row">
+          <label>手机号</label>
+          <input id="loginPhone" placeholder="13800138000" type="tel"/>
+        </div>
+        <button class="save-btn" onclick="doLogin()">进入后台</button>
+      </div>
+      <p style="margin-top:16px;font-size:12px;color:var(--gray);">
+        还没有入驻？<a href="merchant.html" style="color:var(--brand);">立即入驻</a>
+      </p>
+    </div>`;
+}
+
+function doLogin(){
+  const phone = document.getElementById('loginPhone').value.trim();
+  if(!phone){alert('请输入手机号');return;}
+  const shops = getShops();
+  const shop = shops.find(s => s.phone === phone);
+  if(!shop){
+    alert('未找到该手机号对应的店铺，请确认或先入驻');
+    return;
+  }
+  currentShopId = shop.id;
+  renderDashboard(shop);
+}
+
+function renderDashboard(shop){
+  const isPending = shop.status === 'pending';
+  const isApproved = shop.status === 'approved';
+  const isRejected = shop.status === 'rejected';
+
+  const statusText = isPending ? '审核中' : isApproved ? '已通过' : '未通过';
+  const statusClass = isPending ? 'pending' : isApproved ? 'approved' : 'rejected';
+
+  const main = document.getElementById('main');
+  let html = '';
+
+  html += `<div class="status-bar ${statusClass}"><span class="dot"></span>当前状态：${statusText}${isRejected ? '（原因：信息不完整，请修改后重新提交）' : ''}</div>`;
+
+  html += `<div class="tabs">
+    <button class="tab active" onclick="switchTab('info',this)">店铺信息</button>
+    <button class="tab" onclick="switchTab('photos',this)">照片管理</button>
+    <button class="tab" onclick="switchTab('coupons',this)">优惠券</button>
+    ${isApproved ? '<button class="tab" onclick="switchTab(\'stats\',this)">数据</button>' : ''}
+  </div>`;
+
+  // Tab 1: 店铺信息
+  html += `<div class="tab-content active" id="tab-info">
+    <div class="card">
+      <div class="form-row">
+        <label>店铺名称 <span class="req">*</span></label>
+        <input id="editName" value="${shop.name}"/>
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>营业时间</label>
+          <input id="editHours" value="${shop.hours || ''}"/>
+        </div>
+        <div class="form-row">
+          <label>人均消费(元)</label>
+          <input id="editAvg" type="number" value="${shop.avgSpend || ''}"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>店铺地址</label>
+        <input id="editAddr" value="${shop.address}"/>
+      </div>
+      <div class="form-row">
+        <label>店铺简介</label>
+        <textarea id="editDesc">${shop.description || ''}</textarea>
+      </div>
+    </div>
+    <button class="save-btn" onclick="saveShopInfo()">保存修改</button>
+  </div>`;
+
+  // Tab 2: 照片管理
+  html += `<div class="tab-content" id="tab-photos">
+    <div class="card">
+      <div class="form-row">
+        <label>店面门头照</label>
+        <div class="upload-area">
+          <span class="plus">+</span>
+          <span class="hint">点击更换门头照</span>
+          <input type="file" accept="image/*" onchange="handleEditUpload('facade',this,1)"/>
+        </div>
+        <div class="upload-preview" id="facadePreview"></div>
+      </div>
+      <div class="form-row">
+        <label>店内环境照</label>
+        <div class="upload-area">
+          <span class="plus">+</span>
+          <span class="hint">点击上传环境照（最多3张）</span>
+          <input type="file" accept="image/*" onchange="handleEditUpload('env',this,3)"/>
+        </div>
+        <div class="upload-preview" id="envPreview"></div>
+      </div>
+      <div class="form-row">
+        <label>产品/菜品展示照</label>
+        <div class="upload-area">
+          <span class="plus">+</span>
+          <span class="hint">点击上传菜品照（最多5张）</span>
+          <input type="file" accept="image/*" onchange="handleEditUpload('product',this,5)"/>
+        </div>
+        <div class="upload-preview" id="productPreview"></div>
+      </div>
+    </div>
+    <button class="save-btn" onclick="saveShopPhotos()">保存照片</button>
+  </div>`;
+
+  // Tab 3: 优惠券
+  html += `<div class="tab-content" id="tab-coupons">
+    <div class="card">
+      <div id="couponList">`;
+  if(shop.coupons && shop.coupons.length > 0){
+    shop.coupons.forEach((c,i) => {
+      html += `<div class="coupon-item">
+        <div class="left">
+          <span class="amt">${c.amount}元</span>
+          <div class="info">满${c.minSpend}可用 · ${c.desc||'全场通用'}</div>
+        </div>
+        <span class="del-btn" onclick="deleteCoupon(${i})">×</span>
+      </div>`;
+    });
+  } else {
+    html += `<div class="empty">暂无优惠券，添加一张吸引顾客吧</div>`;
+  }
+  html += `</div>
+      <button class="add-coupon-btn" onclick="showAddCoupon()">+ 添加优惠券</button>
+    </div>
+    <div class="card" id="addCouponForm" style="display:none;">
+      <div class="form-row">
+        <label>优惠金额（元）</label>
+        <input id="newCouponAmt" type="number" placeholder="5"/>
+      </div>
+      <div class="form-row">
+        <label>最低消费（元）</label>
+        <input id="newCouponMin" type="number" placeholder="25"/>
+      </div>
+      <div class="form-row">
+        <label>优惠券说明</label>
+        <input id="newCouponDesc" placeholder="全场通用"/>
+      </div>
+      <button class="save-btn" onclick="addNewCoupon()">确认添加</button>
+    </div>
+  </div>`;
+
+  // Tab 4: 数据（仅审核通过后显示）
+  if(isApproved){
+    html += `<div class="tab-content" id="tab-stats">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="num">${Math.floor(Math.random()*50+10)}</div><div class="lbl">今日浏览</div></div>
+        <div class="stat-card"><div class="num">${Math.floor(Math.random()*20+5)}</div><div class="lbl">领券次数</div></div>
+        <div class="stat-card"><div class="num">${Math.floor(Math.random()*15+3)}</div><div class="lbl">核销次数</div></div>
+        <div class="stat-card"><div class="num">${Math.floor(Math.random()*5+1)}</div><div class="lbl">今日新客</div></div>
+      </div>
+      <div class="card">
+        <p style="font-size:13px;color:var(--gray);text-align:center;">数据统计功能开发中，即将上线</p>
+      </div>
+    </div>`;
+  }
+
+  main.innerHTML = html;
+  renderEditPhotos(shop);
+}
+
+function switchTab(tabId, btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+tabId).classList.add('active');
+}
+
+function renderEditPhotos(shop){
+  if(!shop.photos) return;
+  ['facade','env','product'].forEach(type => {
+    const container = document.getElementById(type+'Preview');
+    if(!container || !shop.photos[type]) return;
+    container.innerHTML = shop.photos[type].map((src,i) =>
+      `<div class="thumb"><img src="${src}"/><span class="del" onclick="removeEditPhoto('${type}',${i})">×</span></div>`
+    ).join('');
+  });
+}
+
+let editUploadData = {facade:[], env:[], product:[]};
+
+function handleEditUpload(type, input, max){
+  const file = input.files[0];
+  if(!file) return;
+  const shops = getShops();
+  const shop = shops.find(s=>s.id===currentShopId);
+  if(!shop) return;
+  if(!shop.photos) shop.photos = {facade:[],env:[],product:[]};
+  if(!shop.photos[type]) shop.photos[type] = [];
+  if(shop.photos[type].length >= max){alert(`最多${max}张`);return;}
+  const reader = new FileReader();
+  reader.onload = function(e){
+    shop.photos[type].push(e.target.result);
+    saveShops(shops);
+    renderEditPhotos(shop);
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function removeEditPhoto(type,idx){
+  const shops = getShops();
+  const shop = shops.find(s=>s.id===currentShopId);
+  if(!shop || !shop.photos || !shop.photos[type]) return;
+  shop.photos[type].splice(idx,1);
+  saveShops(shops);
+  renderEditPhotos(shop);
+}
+
+function saveShopInfo(){
+  const shops = getShops();
+  const shop = shops.find(s=>s.id===currentShopId);
+  if(!shop) return;
+  shop.name = document.getElementById('editName').value.trim();
+  shop.hours = document.getElementById('editHours').value.trim();
+  shop.avgSpend = Number(document.getElementById('editAvg').value) || 25;
+  shop.address = document.getElementById('editAddr').value.trim();
+  shop.description = document.getElementById('editDesc').value.trim();
+  saveShops(shops);
+  alert('保存成功！');
+}
+
+function saveShopPhotos(){
+  alert('照片已自动保存！');
+}
+
+function deleteCoupon(idx){
+  const shops = getShops();
+  const shop = shops.find(s=>s.id===currentShopId);
+  if(!shop) return;
+  shop.coupons.splice(idx,1);
+  saveShops(shops);
+  renderDashboard(shop);
+}
+
+function showAddCoupon(){
+  document.getElementById('addCouponForm').style.display = 'block';
+}
+
+function addNewCoupon(){
+  const amt = Number(document.getElementById('newCouponAmt').value);
+  const min = Number(document.getElementById('newCouponMin').value);
+  const desc = document.getElementById('newCouponDesc').value.trim() || '全场通用';
+  if(!amt || !min){alert('请填写金额');return;}
+  const shops = getShops();
+  const shop = shops.find(s=>s.id===currentShopId);
+  if(!shop) return;
+  if(!shop.coupons) shop.coupons = [];
+  shop.coupons.push({amount:amt, minSpend:min, desc:desc});
+  saveShops(shops);
+  renderDashboard(shop);
+}
+
+// 检查URL参数自动登录
+const urlParams = new URLSearchParams(window.location.search);
+const autoPhone = urlParams.get('phone');
+if(autoPhone){
+  document.getElementById('loginPhone') && (document.getElementById('loginPhone').value = autoPhone);
+  // 自动登录在页面加载后执行
+  setTimeout(()=>{
+    const inp = document.getElementById('loginPhone');
+    if(inp) { inp.value = autoPhone; doLogin(); }
+  }, 100);
+} else {
+  renderLogin();
+}
+</script>
+</body>
+</html>
