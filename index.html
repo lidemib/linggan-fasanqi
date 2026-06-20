@@ -291,6 +291,7 @@ const DATA = {
   shops: [
     {
       id:'yuan-huafeng',
+      id:'shop-huafeng',
       name:'袁记云饺·华丰店',
       logo:'🥟',
       rating:4.8,
@@ -301,10 +302,12 @@ const DATA = {
       tags:['现包手工','无添加','堂取自取'],
       isOwner:true,
       cats:['jiaozi'],
-      coupon:{ amount:5, minSpend:25, code:'YJ-HF-2026', claimed:false }
+      coupon:{ amount:5, minSpend:25, code:'YJ-HF-2026', claimed:false },
+      verifyCode:'0682'
     },
     {
       id:'yuan-xingfu',
+      id:'shop-xingfu',
       name:'袁记云饺·幸福店',
       logo:'🥟',
       rating:4.9,
@@ -315,7 +318,8 @@ const DATA = {
       tags:['现包手工','爆款推荐','月销500+'],
       isOwner:true,
       cats:['jiaozi'],
-      coupon:{ amount:5, minSpend:25, code:'YJ-XF-2026', claimed:false }
+      coupon:{ amount:5, minSpend:25, code:'YJ-XF-2026', claimed:false },
+      verifyCode:'0793'
     }
   ]
 };
@@ -510,6 +514,7 @@ function claimCoupon(shopId){
   myCoupons.push({
     shopName: shop.name,
     shopId: shop.id,
+    verifyCode: shop.verifyCode || '',
     amount: shop.coupon.amount,
     minSpend: shop.coupon.minSpend,
     code: shop.coupon.code,

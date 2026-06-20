@@ -31,6 +31,11 @@
       background:var(--gray);color:#fff;font-size:11px;font-weight:500;
       padding:4px 32px;transform:rotate(35deg);
     }
+    .coupon-card.verifying::after{
+      content:'待核销';position:absolute;top:18px;right:-26px;
+      background:var(--teal);color:#fff;font-size:11px;font-weight:500;
+      padding:4px 32px;transform:rotate(35deg);
+    }
     .coupon-top{
       display:flex;align-items:center;padding:16px;border-bottom:2px dashed var(--border);
     }
@@ -80,6 +85,89 @@
     .stat .num{font-size:20px;font-weight:700;color:var(--brand);}
     .stat .lbl{font-size:11px;color:var(--gray);margin-top:2px;}
 
+    /* ===== 核销弹窗 ===== */
+    .verify-overlay{
+      display:none;position:fixed;top:0;left:0;right:0;bottom:0;
+      background:rgba(0,0,0,.5);z-index:1000;
+      align-items:center;justify-content:center;
+    }
+    .verify-overlay.show{display:flex;}
+    .verify-box{
+      width:320px;max-width:90vw;background:var(--white);
+      border-radius:20px;overflow:hidden;animation:verifyPop .25s ease;
+    }
+    @keyframes verifyPop{
+      from{transform:scale(.85);opacity:0;}to{transform:scale(1);opacity:1;}
+    }
+    .verify-header{
+      background:linear-gradient(135deg,var(--brand),#FF8F5E);
+      color:#fff;padding:24px 20px;text-align:center;
+    }
+    .verify-header h2{font-size:17px;font-weight:600;margin-bottom:4px;}
+    .verify-header p{font-size:12px;opacity:.85;}
+    .verify-body{padding:24px 20px;}
+    .verify-shop-name{
+      font-size:15px;font-weight:600;text-align:center;
+      margin-bottom:16px;color:#333;
+    }
+    .verify-shop-name span{color:var(--brand);}
+    .verify-input-group{
+      margin-bottom:8px;
+    }
+    .verify-input-group label{
+      display:block;font-size:13px;color:var(--gray);margin-bottom:6px;
+    }
+    .verify-input-wrap{
+      display:flex;gap:8px;
+    }
+    .verify-input-wrap input{
+      flex:1;height:48px;border:2px solid var(--border);border-radius:12px;
+      text-align:center;font-size:22px;font-weight:700;letter-spacing:4px;
+      font-family:monospace;outline:none;transition:border-color .15s;
+    }
+    .verify-input-wrap input:focus{border-color:var(--brand);}
+    .verify-hint{
+      font-size:11px;color:var(--gray);text-align:center;
+      margin-top:10px;line-height:1.5;
+    }
+    .verify-error{
+      font-size:12px;color:var(--red);text-align:center;
+      margin-top:8px;display:none;
+    }
+    .verify-error.show{display:block;}
+    .verify-actions{
+      display:flex;gap:10px;margin-top:20px;
+    }
+    .verify-actions button{
+      flex:1;height:44px;border-radius:12px;font-size:14px;
+      font-weight:600;cursor:pointer;border:none;transition:all .15s;
+    }
+    .verify-cancel{
+      background:var(--bg);color:var(--gray);border:1px solid var(--border)!important;
+    }
+    .verify-confirm{
+      background:var(--brand);color:#fff;
+    }
+    .verify-confirm:active{background:var(--brand-dark);}
+
+    /* 核销成功动画 */
+    .success-icon{
+      display:none;text-align:center;padding:30px 20px 20px;
+    }
+    .success-icon.show{display:block;}
+    .success-icon .check-circle{
+      width:64px;height:64px;border-radius:50%;
+      background:var(--teal);margin:0 auto 12px;
+      display:flex;align-items:center;justify-content:center;
+      animation:successPop .3s ease;
+    }
+    @keyframes successPop{
+      0%{transform:scale(0);}50%{transform:scale(1.2);}100%{transform:scale(1);}
+    }
+    .success-icon .check-circle svg{width:32px;height:32px;fill:#fff;}
+    .success-icon h3{font-size:17px;color:var(--teal);margin-bottom:4px;}
+    .success-icon p{font-size:12px;color:var(--gray);}
+
     /* 底部导航 */
     .bottom-nav{
       position:fixed;bottom:0;left:0;right:0;
@@ -103,6 +191,45 @@
 
 <div class="main" id="main"></div>
 
+<!-- 核销弹窗 -->
+<div class="verify-overlay" id="verifyOverlay">
+  <div class="verify-box" id="verifyBox">
+    <!-- 核销表单 -->
+    <div id="verifyFormArea">
+      <div class="verify-header">
+        <h2>商家核销</h2>
+        <p>请将手机出示给商家，由商家输入核销码</p>
+      </div>
+      <div class="verify-body">
+        <div class="verify-shop-name">商家：<span id="vShopName"></span></div>
+        <div class="verify-input-group">
+          <label>请输入4位核销码</label>
+          <div class="verify-input-wrap">
+            <input type="text" id="verifyCodeInput" maxlength="4"
+                   placeholder="____" autocomplete="off"
+                   inputmode="numeric" pattern="[0-9]*"/>
+          </div>
+        </div>
+        <div class="verify-hint">商家在后台设置的自定义核销码<br/>输入正确后点确认即可完成核销</div>
+        <div class="verify-error" id="verifyError"></div>
+        <div class="verify-actions">
+          <button class="verify-cancel" onclick="closeVerify()">取消</button>
+          <button class="verify-confirm" onclick="doVerify()">确认核销</button>
+        </div>
+      </div>
+    </div>
+    <!-- 核销成功 -->
+    <div class="success-icon" id="verifySuccess">
+      <div class="check-circle">
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      </div>
+      <h3>核销成功！</h3>
+      <p id="verifySuccessText">优惠券已使用，感谢光临~</p>
+      <button class="verify-confirm" style="margin-top:16px;width:100%;" onclick="closeVerify();render();">好的</button>
+    </div>
+  </div>
+</div>
+
 <div class="bottom-nav">
   <a class="nav-item" href="index.html">
     <span class="nav-icon">🏠</span>首页
@@ -122,7 +249,32 @@
 function getMyCoupons(){return JSON.parse(localStorage.getItem('lgfsq_my_coupons')||'[]');}
 function saveMyCoupons(list){localStorage.setItem('lgfsq_my_coupons',JSON.stringify(list));}
 
+// 获取商家的核销码（从商家数据中读取）
+function getMerchantVerifyCode(shopId){
+  // 从localStorage读取已审核通过的商家列表
+  const merchants = JSON.parse(localStorage.getItem('lgfsq_merchants')||'[]');
+  const approved = merchants.filter(m=>m.status==='approved');
+  
+  // 先从入驻商家里找
+  let m = approved.find(m => m.shopId === shopId || m.name && m.name.includes(shopId));
+  if(m && m.verifyCode) return m.verifyCode;
+
+  // 兜底：从内置商家数据匹配（华丰店/幸福店）
+  const fallbackMap = {
+    'huafeng': '0682',
+    'xingfu': '0793',
+    '华丰': '0682',
+    '幸福': '0793',
+  };
+  
+  for(let [key,code] of Object.entries(fallbackMap)){
+    if((shopId||'').includes(key) || key.includes(shopId||'')) return code;
+  }
+  return null;
+}
+
 let currentTab = 'unused';
+let verifyingIdx = -1; // 当前正在核销的券索引
 
 function render(){
   const coupons = getMyCoupons();
@@ -176,7 +328,7 @@ function render(){
           <span class="${c.used?'':'expire'}">${c.used?'已于'+c.usedAt+'使用':'有效期至 '+c.expireDate}</span>
           ${c.used
             ? '<span class="use-btn used-btn">已使用</span>'
-            : `<button class="use-btn" onclick="useCoupon(${realIdx})">去使用</button>`}
+            : `<button class="use-btn" onclick="openVerify(${realIdx})">去使用</button>`}
         </div>
       </div>`;
     });
@@ -187,15 +339,106 @@ function render(){
 
 function setTab(tab){currentTab=tab;render();}
 
-function useCoupon(idx){
+/* ========== 核销流程 ========== */
+
+function openVerify(idx){
   const coupons = getMyCoupons();
   if(!coupons[idx] || coupons[idx].used) return;
-  if(!confirm('确认已到店消费并使用此优惠券？\n（操作后不可撤销）')) return;
-  coupons[idx].used = true;
-  coupons[idx].usedAt = new Date().toLocaleDateString('zh-CN');
-  saveMyCoupons(coupons);
-  render();
+  
+  verifyingIdx = idx;
+  const c = coupons[idx];
+
+  // 填充信息
+  document.getElementById('vShopName').textContent = c.shopName;
+  document.getElementById('verifyCodeInput').value = '';
+  document.getElementById('verifyError').className = 'verify-error';
+  
+  // 显示核销表单，隐藏成功页
+  document.getElementById('verifyFormArea').style.display = '';
+  document.getElementById('verifySuccess').className = 'success-icon';
+  
+  // 显示弹窗
+  document.getElementById('verifyOverlay').classList.add('show');
+
+  // 自动聚焦输入框（延迟等动画完）
+  setTimeout(()=>document.getElementById('verifyCodeInput').focus(),300);
 }
+
+function closeVerify(){
+  document.getElementById('verifyOverlay').classList.remove('show');
+  verifyingIdx = -1;
+}
+
+function doVerify(){
+  if(verifyingIdx<0) return;
+  
+  const inputEl = document.getElementById('verifyCodeInput');
+  const errEl = document.getElementById('verifyError');
+  const code = inputEl.value.trim();
+
+  // 校验
+  if(!code){
+    errEl.textContent = '请输入核销码';
+    errEl.className = 'verify-error show';
+    return;
+  }
+  if(code.length!==4 || !/^\d{4}$/.test(code)){
+    errEl.textContent = '核销码为4位数字';
+    errEl.className = 'verify-error show';
+    return;
+  }
+
+  const coupons = getMyCoupons();
+  const c = coupons[verifyingIdx];
+  // 优先使用券自带的核销码，其次从商家数据中查找
+  const correctCode = c.verifyCode || getMerchantVerifyCode(c.shopId || c.shopName);
+
+  // 验证核销码
+  if(code !== correctCode){
+    errEl.textContent = '❌ 核销码不正确，请向商家确认后重新输入';
+    errEl.className = 'verify-error show';
+    
+    // 震动反馈
+    inputEl.style.borderColor = '#E24B4A';
+    setTimeout(()=>inputEl.style.borderColor='',800);
+    return;
+  }
+
+  // 核销成功！
+  c.used = true;
+  c.usedAt = new Date().toLocaleDateString('zh-CN');
+  c.verifiedBy = code;
+  saveMyCoupons(coupons);
+
+  // 显示成功动画
+  document.getElementById('verifyFormArea').style.display = 'none';
+  document.getElementById('verifySuccessText').textContent 
+    = `${c.shopName} · ¥${c.amount}优惠券已核销`;
+  document.getElementById('verifySuccess').className = 'success-icon show';
+
+  // 记录核销日志到localStorage
+  const logs = JSON.parse(localStorage.getItem('lgfsq_verify_logs')||'[]');
+  logs.push({
+    shopName:c.shopName,
+    amount:c.amount,
+    code:c.code,
+    verifyCode:code,
+    verifiedAt:new Date().toISOString()
+  });
+  localStorage.setItem('lgfsq_verify_logs',JSON.stringify(logs));
+}
+
+// 监听回车键提交
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&document.getElementById('verifyOverlay').classList.contains('show')){
+    doVerify();
+  }
+});
+
+// 点击遮罩关闭
+document.getElementById('verifyOverlay').addEventListener('click',function(e){
+  if(e.target===this) closeVerify();
+});
 
 render();
 </script>
