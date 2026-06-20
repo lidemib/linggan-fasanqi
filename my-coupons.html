@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>我的优惠券 — 灵感发散器</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    :root{
+      --brand:#FF6B35;--brand-light:#FFF0EB;--brand-dark:#D94F1E;
+      --teal:#1D9E75;--teal-light:#E1F5EE;
+      --gray:#5F5E5A;--border:#E8E6E0;--bg:#FAFAF8;--white:#FFFFFF;
+      --red:#E24B4A;--red-light:#FCEBEB;
+      --radius:14px;
+    }
+    body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif;background:var(--bg);min-height:100vh;color:#2C2C2A;padding-bottom:80px;}
+
+    .topbar{background:var(--white);border-bottom:1px solid var(--border);padding:16px 20px 12px;position:sticky;top:0;z-index:100;}
+    .topbar h1{font-size:18px;font-weight:600;color:var(--brand);}
+    .topbar p{font-size:12px;color:var(--gray);margin-top:2px;}
+
+    .main{padding:16px 16px 20px;}
+
+    .coupon-card{
+      background:var(--white);border-radius:var(--radius);margin-bottom:14px;
+      overflow:hidden;border:1px solid var(--border);position:relative;
+    }
+    .coupon-card.used{opacity:0.55;}
+    .coupon-card.used::after{
+      content:'已使用';position:absolute;top:18px;right:-26px;
+      background:var(--gray);color:#fff;font-size:11px;font-weight:500;
+      padding:4px 32px;transform:rotate(35deg);
+    }
+    .coupon-top{
+      display:flex;align-items:center;padding:16px;border-bottom:2px dashed var(--border);
+    }
+    .coupon-amount-box{
+      width:72px;text-align:center;flex-shrink:0;
+      border-right:2px dashed var(--border);padding-right:12px;
+    }
+    .coupon-amount-box .sign{font-size:14px;color:var(--brand);}
+    .coupon-amount-box .num{font-size:32px;font-weight:700;color:var(--brand);line-height:1;}
+    .coupon-amount-box .cond{font-size:11px;color:var(--gray);margin-top:2px;}
+    .coupon-info{flex:1;padding-left:14px;}
+    .coupon-info .shop-name{font-size:15px;font-weight:600;margin-bottom:4px;}
+    .coupon-info .coupon-desc{font-size:12px;color:var(--gray);}
+    .coupon-info .coupon-code{
+      display:inline-block;margin-top:6px;
+      background:var(--bg);border:1px solid var(--border);
+      border-radius:6px;padding:3px 8px;font-size:12px;
+      font-family:monospace;letter-spacing:1px;color:var(--brand-dark);
+    }
+
+    .coupon-bottom{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:10px 16px;font-size:12px;color:var(--gray);
+    }
+    .coupon-bottom .expire{color:var(--red);}
+    .use-btn{
+      background:var(--brand);color:#fff;border:none;border-radius:20px;
+      padding:6px 16px;font-size:12px;font-weight:500;cursor:pointer;
+    }
+    .use-btn:active{background:var(--brand-dark);}
+    .use-btn.used-btn{background:#ccc;pointer-events:none;}
+
+    .empty{text-align:center;padding:60px 20px;color:var(--gray);}
+    .empty .icon{font-size:48px;margin-bottom:12px;}
+    .empty p{font-size:14px;margin-bottom:4px;}
+    .empty .sub{font-size:12px;}
+
+    .tab-bar{
+      display:flex;gap:0;margin-bottom:16px;
+      background:var(--white);border-radius:10px;overflow:hidden;border:1px solid var(--border);
+    }
+    .tab-item{flex:1;text-align:center;padding:10px;font-size:13px;cursor:pointer;color:var(--gray);transition:all .15s;}
+    .tab-item.active{background:var(--brand);color:#fff;font-weight:500;}
+
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+    .stat{background:var(--white);border-radius:10px;padding:14px;text-align:center;border:1px solid var(--border);}
+    .stat .num{font-size:20px;font-weight:700;color:var(--brand);}
+    .stat .lbl{font-size:11px;color:var(--gray);margin-top:2px;}
+
+    /* 底部导航 */
+    .bottom-nav{
+      position:fixed;bottom:0;left:0;right:0;
+      background:var(--white);border-top:1px solid var(--border);
+      display:flex;z-index:100;padding:6px 0 env(safe-area-inset-bottom,8px);
+    }
+    .nav-item{
+      flex:1;text-align:center;padding:6px 0;cursor:pointer;
+      font-size:10px;color:var(--gray);text-decoration:none;transition:color .15s;
+    }
+    .nav-item .nav-icon{font-size:20px;display:block;margin-bottom:2px;}
+    .nav-item.active,.nav-item:active{color:var(--brand);}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>我的优惠券</h1>
+  <p>领了券，别忘了用</p>
+</div>
+
+<div class="main" id="main"></div>
+
+<div class="bottom-nav">
+  <a class="nav-item" href="index.html">
+    <span class="nav-icon">🏠</span>首页
+  </a>
+  <a class="nav-item active" href="my-coupons.html">
+    <span class="nav-icon">🎫</span>优惠券
+  </a>
+  <a class="nav-item" href="merchant.html">
+    <span class="nav-icon">🏪</span>商家入驻
+  </a>
+  <a class="nav-item" href="admin.html">
+    <span class="nav-icon">🛡️</span>管理
+  </a>
+</div>
+
+<script>
+function getMyCoupons(){return JSON.parse(localStorage.getItem('lgfsq_my_coupons')||'[]');}
+function saveMyCoupons(list){localStorage.setItem('lgfsq_my_coupons',JSON.stringify(list));}
+
+let currentTab = 'unused';
+
+function render(){
+  const coupons = getMyCoupons();
+  const unused = coupons.filter(c=>!c.used);
+  const used = coupons.filter(c=>c.used);
+
+  const main = document.getElementById('main');
+  let html = '';
+
+  // 统计
+  html += `<div class="stats">
+    <div class="stat"><div class="num">${coupons.length}</div><div class="lbl">全部</div></div>
+    <div class="stat"><div class="num">${unused.length}</div><div class="lbl">未使用</div></div>
+    <div class="stat"><div class="num">${used.length}</div><div class="lbl">已使用</div></div>
+  </div>`;
+
+  // tab
+  html += `<div class="tab-bar">
+    <div class="tab-item ${currentTab==='unused'?'active':''}" onclick="setTab('unused')">未使用</div>
+    <div class="tab-item ${currentTab==='used'?'active':''}" onclick="setTab('used')">已使用</div>
+    <div class="tab-item ${currentTab==='all'?'active':''}" onclick="setTab('all')">全部</div>
+  </div>`;
+
+  let list = coupons;
+  if(currentTab==='unused') list = unused;
+  if(currentTab==='used') list = used;
+
+  if(list.length===0){
+    html += `<div class="empty">
+      <div class="icon">🎫</div>
+      <p>${currentTab==='used'?'暂无已使用的券':'还没有领取优惠券'}</p>
+      <p class="sub">去首页逛逛，领一张券吧</p>
+    </div>`;
+  } else {
+    list.forEach((c,i) => {
+      const realIdx = coupons.indexOf(c);
+      html += `<div class="coupon-card ${c.used?'used':''}">
+        <div class="coupon-top">
+          <div class="coupon-amount-box">
+            <span class="sign">¥</span>
+            <span class="num">${c.amount}</span>
+            <div class="cond">满${c.minSpend}可用</div>
+          </div>
+          <div class="coupon-info">
+            <div class="shop-name">${c.shopName}</div>
+            <div class="coupon-desc">${c.desc||'全场通用'}</div>
+            <div class="coupon-code">${c.code}</div>
+          </div>
+        </div>
+        <div class="coupon-bottom">
+          <span class="${c.used?'':'expire'}">${c.used?'已于'+c.usedAt+'使用':'有效期至 '+c.expireDate}</span>
+          ${c.used
+            ? '<span class="use-btn used-btn">已使用</span>'
+            : `<button class="use-btn" onclick="useCoupon(${realIdx})">去使用</button>`}
+        </div>
+      </div>`;
+    });
+  }
+
+  main.innerHTML = html;
+}
+
+function setTab(tab){currentTab=tab;render();}
+
+function useCoupon(idx){
+  const coupons = getMyCoupons();
+  if(!coupons[idx] || coupons[idx].used) return;
+  if(!confirm('确认已到店消费并使用此优惠券？\n（操作后不可撤销）')) return;
+  coupons[idx].used = true;
+  coupons[idx].usedAt = new Date().toLocaleDateString('zh-CN');
+  saveMyCoupons(coupons);
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

@@ -249,8 +249,8 @@
   <a class="nav-item" href="merchant.html">
     <span class="nav-icon">🏪</span>商家入驻
   </a>
-  <a class="nav-item" href="merchant-dashboard.html">
-    <span class="nav-icon">⚙️</span>商家后台
+  <a class="nav-item" href="my-coupons.html">
+    <span class="nav-icon">🎫</span>优惠券
   </a>
   <a class="nav-item" href="admin.html">
     <span class="nav-icon">🛡️</span>管理
@@ -503,13 +503,30 @@ function claimCoupon(shopId){
   if(!shop || !shop.coupon || shop.coupon.claimed) return;
   shop.coupon.claimed = true;
 
+  // 保存到我的优惠券（localStorage）
+  const myCoupons = JSON.parse(localStorage.getItem('lgfsq_my_coupons') || '[]');
+  const expireDate = new Date();
+  expireDate.setDate(expireDate.getDate() + 7);
+  myCoupons.push({
+    shopName: shop.name,
+    shopId: shop.id,
+    amount: shop.coupon.amount,
+    minSpend: shop.coupon.minSpend,
+    code: shop.coupon.code,
+    desc: '全场通用',
+    expireDate: expireDate.toLocaleDateString('zh-CN'),
+    used: false,
+    claimedAt: new Date().toLocaleDateString('zh-CN')
+  });
+  localStorage.setItem('lgfsq_my_coupons', JSON.stringify(myCoupons));
+
   // 显示弹窗
-  document.getElementById('modal-title').textContent = `恭喜领取成功！`;
-  document.getElementById('modal-sub').textContent = `进店消费时出示二维码，商家扫码核销即可`;
+  document.getElementById('modal-title').textContent = '恭喜领取成功！';
+  document.getElementById('modal-sub').textContent = '优惠券已存入"我的优惠券"，进店消费时出示核销码';
   document.getElementById('modal-coupon').innerHTML = `
     <div style="font-size:13px;opacity:.85;margin-bottom:4px;">${shop.name}</div>
     <div class="amount">¥${shop.coupon.amount}</div>
-    <div class="desc">满${shop.coupon.minSpend}元可用 · 当日有效</div>
+    <div class="desc">满${shop.coupon.minSpend}元可用 · 7天有效</div>
     <div class="code">${shop.coupon.code}</div>
   `;
 
