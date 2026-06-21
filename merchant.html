@@ -9,7 +9,6 @@
     :root{
       --brand:#FF6B35;--brand-light:#FFF0EB;--brand-dark:#D94F1E;
       --teal:#1D9E75;--teal-light:#E1F5EE;
-      --purple:#534AB7;--purple-light:#EEEDFE;
       --gray:#5F5E5A;--border:#E8E6E0;--bg:#FAFAF8;--white:#FFFFFF;
       --radius:14px;
     }
@@ -20,12 +19,19 @@
     .topbar h1{font-size:18px;font-weight:600;color:var(--brand);}
     .topbar p{font-size:12px;color:var(--gray);margin-top:2px;}
 
+    /* 步骤进度条 */
+    .stepper{display:flex;align-items:center;padding:16px 20px 0;gap:0;overflow-x:auto;}
+    .step-dot{width:28px;height:28px;border-radius:50%;background:var(--border);color:#aaa;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;}
+    .step-dot.active{background:var(--brand);color:#fff;}
+    .step-dot.done{background:var(--teal);color:#fff;}
+    .step-line{flex:1;height:2px;background:var(--border);transition:all .2s;}
+    .step-line.done{background:var(--teal);}
+
     .main{padding:16px 16px 40px;}
 
     .card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;}
-
-    .step-badge{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--brand);color:#fff;font-size:12px;font-weight:600;margin-right:8px;}
-    .step-title{font-size:15px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;}
+    .card-title{font-size:15px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+    .card-title .num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--brand);color:#fff;font-size:12px;font-weight:600;}
 
     label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(--gray);}
     label .req{color:var(--brand);}
@@ -40,18 +46,20 @@
 
     .form-row{margin-bottom:14px;}
     .form-row:last-child{margin-bottom:0;}
-
     .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 
+    /* 上传区域 */
     .upload-area{
       border:2px dashed var(--border);border-radius:10px;
       padding:20px;text-align:center;cursor:pointer;
       transition:all .15s;background:var(--bg);position:relative;
     }
     .upload-area:active{border-color:var(--brand);background:var(--brand-light);}
+    .upload-area.has-file{border-color:var(--teal);background:var(--teal-light);border-style:solid;}
     .upload-area .plus{font-size:28px;color:var(--gray);display:block;margin-bottom:4px;}
     .upload-area .hint{font-size:12px;color:var(--gray);}
     .upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+
     .upload-preview{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
     .upload-preview .thumb{
       position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;
@@ -65,6 +73,7 @@
       cursor:pointer;
     }
 
+    /* 品类选择 */
     .cat-checks{display:flex;flex-wrap:wrap;gap:8px;}
     .cat-check{
       display:flex;align-items:center;gap:4px;
@@ -73,20 +82,37 @@
       transition:all .15s;background:var(--bg);
     }
     .cat-check:active,.cat-check.checked{border-color:var(--brand);background:var(--brand-light);color:var(--brand);}
-    .cat-check input{display:none;}
 
+    /* 优惠券 */
     .coupon-row{display:flex;gap:10px;align-items:center;}
     .coupon-row input{width:80px;text-align:center;}
     .coupon-row span{font-size:13px;color:var(--gray);white-space:nowrap;}
 
-    .submit-btn{
+    /* 按钮 */
+    .btn-primary{
       width:100%;padding:14px;border:none;border-radius:12px;
       background:var(--brand);color:#fff;font-size:15px;font-weight:500;
-      cursor:pointer;margin-top:20px;
+      cursor:pointer;margin-top:16px;
     }
-    .submit-btn:active{background:var(--brand-dark);}
-    .submit-btn:disabled{background:#ccc;pointer-events:none;}
+    .btn-primary:active{background:var(--brand-dark);}
+    .btn-secondary{
+      width:100%;padding:14px;border:1px solid var(--border);border-radius:12px;
+      background:var(--white);color:var(--gray);font-size:15px;font-weight:500;
+      cursor:pointer;margin-top:10px;
+    }
+    .btn-secondary:active{background:var(--bg);}
 
+    /* OCR识别按钮 */
+    .ocr-btn{
+      display:inline-flex;align-items:center;gap:4px;
+      padding:6px 14px;border:1px solid var(--brand);border-radius:20px;
+      background:var(--brand-light);color:var(--brand);font-size:12px;
+      cursor:pointer;margin-top:10px;transition:all .15s;
+    }
+    .ocr-btn:active{background:var(--brand);color:#fff;}
+    .ocr-tip{font-size:11px;color:#aaa;margin-top:6px;}
+
+    /* 成功页 */
     .success-box{text-align:center;padding:40px 20px;}
     .success-box .icon{font-size:48px;margin-bottom:12px;}
     .success-box h2{font-size:18px;margin-bottom:8px;}
@@ -109,33 +135,88 @@
   </div>
 </div>
 
+<!-- 步骤进度条 -->
+<div class="stepper" id="stepper">
+  <div class="step-dot active" data-step="1">1</div>
+  <div class="step-line" data-line="1"></div>
+  <div class="step-dot" data-step="2">2</div>
+  <div class="step-line" data-line="2"></div>
+  <div class="step-dot" data-step="3">3</div>
+  <div class="step-line" data-line="3"></div>
+  <div class="step-dot" data-step="4">4</div>
+  <div class="step-line" data-line="4"></div>
+  <div class="step-dot" data-step="5">5</div>
+</div>
+
 <div class="main">
 
   <div class="tip-box">
     灵感发散器目前免费开放商家入驻。提交信息后我们会在24小时内审核，审核通过即可在用户端展示。
   </div>
 
-  <!-- 第1步：基本信息 -->
+  <!-- ========== 第1步：营业执照 ========== -->
   <div class="page active" id="step1">
     <div class="card">
-      <div class="step-title"><span class="step-badge">1</span> 基本信息</div>
+      <div class="card-title"><span class="num">1</span> 营业执照</div>
+
       <div class="form-row">
-        <label>店铺名称 <span class="req">*</span></label>
-        <input id="shopName" placeholder="如：袁记云饺·华丰店"/>
+        <label>上传营业执照照片 <span class="req">*</span></label>
+        <div class="upload-area" id="uploadLicense" onclick="triggerUpload('license')">
+          <span class="plus" id="licensePlus">+</span>
+          <span class="hint" id="licenseHint">点击上传营业执照照片（清晰拍摄，四角完整）</span>
+          <input type="file" accept="image/*" id="licenseInput" onchange="handleLicenseUpload(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer;"/>
+        </div>
+        <div class="ocr-btn" onclick="triggerOCR()">📷 识别营业执照信息</div>
+        <div class="ocr-tip">tip：点击"识别"可自动填写下方主体信息（需接入OCR API，当前为手动填写模式）</div>
       </div>
-      <div class="form-grid">
-        <div class="form-row">
-          <label>联系电话 <span class="req">*</span></label>
-          <input id="shopPhone" placeholder="13800138000"/>
-        </div>
-        <div class="form-row">
-          <label>联系人</label>
-          <input id="shopContact" placeholder="老板姓名"/>
-        </div>
+
+      <div class="form-row">
+        <label>主体名称（企业/个体户名称） <span class="req">*</span></label>
+        <input id="legalName" placeholder="如：佛山市顺德区XXX餐饮店"/>
       </div>
       <div class="form-row">
-        <label>店铺地址 <span class="req">*</span></label>
-        <input id="shopAddr" placeholder="顺德区XX路XX号"/>
+        <label>统一社会信用代码 <span class="req">*</span></label>
+        <input id="creditCode" placeholder="如：92440606MA5XXXXXXY"/>
+      </div>
+      <div class="form-row">
+        <label>注册地址 <span class="req">*</span></label>
+        <input id="legalAddr" placeholder="营业执照上的注册地址"/>
+      </div>
+      <div class="form-row">
+        <label>法定代表人</label>
+        <input id="legalPerson" placeholder="营业执照上的法人姓名（选填）"/>
+      </div>
+    </div>
+
+    <!-- 店铺展示名称 -->
+    <div class="card">
+      <div class="card-title"><span class="num">2</span> 店铺展示名称</div>
+      <div class="form-row">
+        <label>店铺展示名称 <span class="req">*</span></label>
+        <input id="shopName" placeholder="如：袁记云饺·华丰店（可与主体名称不同）"/>
+        <div style="font-size:11px;color:#aaa;margin-top:4px;">用户端展示的名称，建议包含品牌+分店名</div>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="goStep(2)">下一步：填写店铺信息 →</button>
+  </div>
+
+  <!-- ========== 第2步：店铺基本信息 ========== -->
+  <div class="page" id="step2">
+    <div class="card">
+      <div class="card-title"><span class="num">3</span> 店铺基本信息</div>
+
+      <div class="form-row">
+        <label>联系电话 <span class="req">*</span></label>
+        <input id="shopPhone" placeholder="13800138000"/>
+      </div>
+      <div class="form-row">
+        <label>联系人</label>
+        <input id="shopContact" placeholder="老板姓名"/>
+      </div>
+      <div class="form-row">
+        <label>店铺实际地址 <span class="req">*</span></label>
+        <input id="shopAddr" placeholder="顺德区XX路XX号（用户导航用）"/>
       </div>
       <div class="form-grid">
         <div class="form-row">
@@ -147,61 +228,86 @@
           <input id="shopAvg" type="number" placeholder="25"/>
         </div>
       </div>
+      <div class="form-row">
+        <label>选择品类标签 <span class="req">*</span></label>
+        <div class="cat-checks" id="catChecks"></div>
+      </div>
+      <div class="form-row">
+        <label>店铺简介</label>
+        <textarea id="shopDesc" placeholder="介绍一下你的店铺特色，让用户一眼心动（50-200字）" maxlength="200"></textarea>
+        <div style="text-align:right;font-size:11px;color:#aaa;" id="descCount">0/200</div>
+      </div>
     </div>
-    <button class="submit-btn" onclick="goStep(2)">下一步：上传照片 →</button>
+
+    <button class="btn-secondary" onclick="goStep(1)">← 上一步</button>
+    <button class="btn-primary" onclick="goStep(3)">下一步：上传环境照片 →</button>
   </div>
 
-  <!-- 第2步：上传照片 -->
-  <div class="page" id="step2">
+  <!-- ========== 第3步：经营环境照片 ========== -->
+  <div class="page" id="step3">
     <div class="card">
-      <div class="step-title"><span class="step-badge">2</span> 店铺照片</div>
+      <div class="card-title"><span class="num">4</span> 经营环境照片</div>
+      <p style="font-size:12px;color:var(--gray);margin-bottom:14px;">清晰的门头和店内环境照能让用户更有进店欲望</p>
+
       <div class="form-row">
-        <label>店面门头照 <span class="req">*</span></label>
+        <label>门头照 <span class="req">*</span></label>
         <div class="upload-area" id="uploadFacade">
           <span class="plus">+</span>
-          <span class="hint">点击上传门头照片（1张）</span>
+          <span class="hint">点击上传门头照片（1张，清晰拍出店招）</span>
           <input type="file" accept="image/*" onchange="handleUpload('facade',this,1)"/>
         </div>
         <div class="upload-preview" id="facadePreview"></div>
       </div>
+
       <div class="form-row">
         <label>店内环境照 <span class="req">*</span></label>
         <div class="upload-area" id="uploadEnv">
           <span class="plus">+</span>
-          <span class="hint">点击上传环境照片（最多3张）</span>
-          <input type="file" accept="image/*" onchange="handleUpload('env',this,3)"/>
+          <span class="hint">点击上传店内环境照片（最多5张）</span>
+          <input type="file" accept="image/*" onchange="handleUpload('env',this,5)"/>
         </div>
         <div class="upload-preview" id="envPreview"></div>
       </div>
+    </div>
+
+    <button class="btn-secondary" onclick="goStep(2)">← 上一步</button>
+    <button class="btn-primary" onclick="goStep(4)">下一步：上传菜品照片 →</button>
+  </div>
+
+  <!-- ========== 第4步：菜品照片 ========== -->
+  <div class="page" id="step4">
+    <div class="card">
+      <div class="card-title"><span class="num">5</span> 菜品照片</div>
+      <p style="font-size:12px;color:var(--gray);margin-bottom:14px;">上传招牌菜、热门菜照片，用户在"灵感发散器"里会直接看到</p>
+
       <div class="form-row">
-        <label>产品/菜品展示照</label>
+        <label>菜品/产品照片 <span class="req">*</span></label>
         <div class="upload-area" id="uploadProduct">
           <span class="plus">+</span>
-          <span class="hint">点击上传菜品照片（最多5张）</span>
-          <input type="file" accept="image/*" onchange="handleUpload('product',this,5)"/>
+          <span class="hint">点击上传菜品照片（最多9张，清晰美观）</span>
+          <input type="file" accept="image/*" onchange="handleUpload('product',this,9)"/>
         </div>
         <div class="upload-preview" id="productPreview"></div>
       </div>
-    </div>
-    <button class="submit-btn" style="background:var(--gray);margin-bottom:10px;" onclick="goStep(1)">← 上一步</button>
-    <button class="submit-btn" onclick="goStep(3)">下一步：设置优惠券 →</button>
-  </div>
 
-  <!-- 第3步：优惠券 & 品类 -->
-  <div class="page" id="step3">
-    <div class="card">
-      <div class="step-title"><span class="step-badge">3</span> 品类标签</div>
       <div class="form-row">
-        <label>选择你店属于哪些品类 <span class="req">*</span></label>
-        <div class="cat-checks" id="catChecks"></div>
+        <label>招牌菜名称（选填）</label>
+        <input id="signatureDish" placeholder="如：手工鲜虾云吞（会在用户端展示）"/>
       </div>
     </div>
 
+    <button class="btn-secondary" onclick="goStep(3)">← 上一步</button>
+    <button class="btn-primary" onclick="goStep(5)">下一步：设置优惠券 →</button>
+  </div>
+
+  <!-- ========== 第5步：优惠券设置 ========== -->
+  <div class="page" id="step5">
     <div class="card">
-      <div class="step-title"><span class="step-badge">4</span> 优惠券设置</div>
-      <p style="font-size:12px;color:var(--gray);margin-bottom:12px;">自主设定优惠力度，吸引附近用户进店消费。至少设置1张优惠券。</p>
+      <div class="card-title"><span class="num">6</span> 优惠券设置</div>
+      <p style="font-size:12px;color:var(--gray);margin-bottom:14px;">自主设定优惠力度，吸引附近用户进店消费。至少设置1张优惠券。</p>
+
       <div id="couponList">
-        <div class="coupon-item" style="background:var(--brand-light);border-radius:10px;padding:14px;margin-bottom:10px;">
+        <div class="coupon-item" style="background:var(--brand-light);border-radius:10px;padding:14px;margin-bottom:10px;position:relative;">
           <div class="coupon-row">
             <input type="number" placeholder="5" class="coupon-amount"/>
             <span>元券，满</span>
@@ -209,7 +315,7 @@
             <span>元可用</span>
           </div>
           <div class="form-row" style="margin-top:10px;margin-bottom:0;">
-            <input class="coupon-desc" placeholder="优惠券说明（如：全场通用）"/>
+            <input class="coupon-desc" placeholder="优惠券说明（如：全场通用，不含外卖）"/>
           </div>
         </div>
       </div>
@@ -217,15 +323,17 @@
     </div>
 
     <div class="card">
-      <div class="step-title"><span class="step-badge">5</span> 店铺简介</div>
+      <div class="card-title"><span class="num">7</span> 核销码设置</div>
+      <p style="font-size:12px;color:var(--gray);margin-bottom:12px;">用户到店核销优惠券时，输入此码完成核销。建议设置4位数字。</p>
       <div class="form-row">
-        <textarea id="shopDesc" placeholder="介绍一下你的店铺特色，让用户一眼心动（50-200字）" maxlength="200"></textarea>
+        <label>核销码 <span class="req">*</span></label>
+        <input id="verifyCode" placeholder="如：0682" maxlength="8" style="width:160px;"/>
+        <div style="font-size:11px;color:#aaa;margin-top:4px;">用户"去使用"时输入此码完成核销</div>
       </div>
-      <div style="text-align:right;font-size:11px;color:#aaa;" id="descCount">0/200</div>
     </div>
 
-    <button class="submit-btn" style="background:var(--gray);margin-bottom:10px;" onclick="goStep(2)">← 上一步</button>
-    <button class="submit-btn" onclick="submitForm()">提交审核</button>
+    <button class="btn-secondary" onclick="goStep(4)">← 上一步</button>
+    <button class="btn-primary" onclick="submitForm()">提交审核</button>
   </div>
 
   <!-- 成功页 -->
@@ -250,42 +358,87 @@ const ALL_CATS = [
   {id:'xiaochu',name:'小食'},{id:'kuaican',name:'快餐'}
 ];
 
-let uploadData = {facade:[], env:[], product:[]};
+let uploadData = {license:[], facade:[], env:[], product:[]};
 let selectedCats = [];
 
-// 初始化品类选项
-function initCatChecks(){
-  const box = document.getElementById('catChecks');
-  box.innerHTML = ALL_CATS.map(c =>
-    `<div class="cat-check" data-id="${c.id}" onclick="toggleCat(this,'${c.id}')">${c.name}</div>`
-  ).join('');
-}
-
-function toggleCat(el,id){
-  el.classList.toggle('checked');
-  const idx = selectedCats.indexOf(id);
-  if(idx>=0) selectedCats.splice(idx,1);
-  else selectedCats.push(id);
+/* ========== 步骤导航 ========== */
+function updateStepper(n){
+  document.querySelectorAll('.step-dot').forEach(d=>{
+    const s = Number(d.dataset.step);
+    d.classList.remove('active','done');
+    if(s===n) d.classList.add('active');
+    else if(s<n) d.classList.add('done');
+  });
+  document.querySelectorAll('.step-line').forEach(l=>{
+    const s = Number(l.dataset.line);
+    l.classList.toggle('done', s < n);
+  });
 }
 
 function goStep(n){
+  // 校验
   if(n===2){
-    const name = document.getElementById('shopName').value.trim();
-    const phone = document.getElementById('shopPhone').value.trim();
-    const addr = document.getElementById('shopAddr').value.trim();
-    if(!name){alert('请填写店铺名称');return;}
-    if(!phone){alert('请填写联系电话');return;}
-    if(!addr){alert('请填写店铺地址');return;}
+    const legalName = document.getElementById('legalName').value.trim();
+    const creditCode = document.getElementById('creditCode').value.trim();
+    const shopName = document.getElementById('shopName').value.trim();
+    if(!legalName){alert('请填写主体名称');return;}
+    if(!creditCode){alert('请填写统一社会信用代码');return;}
+    if(!shopName){alert('请填写店铺展示名称');return;}
   }
   if(n===3){
-    if(uploadData.facade.length===0){alert('请上传门头照');return;}
-    if(uploadData.env.length===0){alert('请上传至少1张环境照');return;}
+    const phone = document.getElementById('shopPhone').value.trim();
+    const addr = document.getElementById('shopAddr').value.trim();
+    if(!phone){alert('请填写联系电话');return;}
+    if(!addr){alert('请填写店铺实际地址');return;}
+    if(selectedCats.length===0){alert('请至少选择一个品类标签');return;}
   }
+  if(n===4){
+    if(uploadData.facade.length===0){alert('请上传门头照');return;}
+    if(uploadData.env.length===0){alert('请上传至少1张店内环境照');return;}
+  }
+  if(n===5){
+    if(uploadData.product.length===0){alert('请上传至少1张菜品照片');return;}
+  }
+
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('step'+n).classList.add('active');
+  updateStepper(n);
   window.scrollTo(0,0);
 }
 
+/* ========== 营业执照上传 ========== */
+function triggerUpload(type){
+  // 由input的onchange直接处理，这里留作接口
+}
+
+function handleLicenseUpload(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    uploadData.license = [e.target.result];
+    const area = document.getElementById('uploadLicense');
+    area.classList.add('has-file');
+    document.getElementById('licensePlus').style.display = 'none';
+    document.getElementById('licenseHint').textContent = '✅ 营业执照已上传，点击可重新上传';
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+/* ========== OCR识别（预留接口） ========== */
+function triggerOCR(){
+  const license = uploadData.license;
+  if(!license || license.length===0){
+    alert('请先上传营业执照照片');
+    return;
+  }
+  // TODO: 接入腾讯云/阿里云 OCR API
+  // 当前为模拟模式，提示用户手动填写
+  alert('OCR识别功能需接入云端API。\n\n目前请手动填写下方主体信息。\n\n（后续版本将支持自动识别企业名称、信用代码、注册地址）');
+}
+
+/* ========== 照片上传 ========== */
 function handleUpload(type, input, max){
   const file = input.files[0];
   if(!file) return;
@@ -313,6 +466,22 @@ function removeUpload(type,idx){
   renderPreviews(type);
 }
 
+/* ========== 品类选择 ========== */
+function initCatChecks(){
+  const box = document.getElementById('catChecks');
+  box.innerHTML = ALL_CATS.map(c =>
+    `<div class="cat-check" data-id="${c.id}" onclick="toggleCat(this,'${c.id}')">${c.name}</div>`
+  ).join('');
+}
+
+function toggleCat(el,id){
+  el.classList.toggle('checked');
+  const idx = selectedCats.indexOf(id);
+  if(idx>=0) selectedCats.splice(idx,1);
+  else selectedCats.push(id);
+}
+
+/* ========== 优惠券 ========== */
 function addCoupon(){
   const list = document.getElementById('couponList');
   const div = document.createElement('div');
@@ -327,46 +496,55 @@ function addCoupon(){
       <span>元可用</span>
     </div>
     <div class="form-row" style="margin-top:10px;margin-bottom:0;">
-      <input class="coupon-desc" placeholder="优惠券说明"/>
+      <input class="coupon-desc" placeholder="优惠券说明（如：全场通用，不含外卖）"/>
     </div>`;
   list.appendChild(div);
 }
 
-// 字数统计
-document.getElementById('shopDesc').addEventListener('input',function(){
-  document.getElementById('descCount').textContent = this.value.length + '/200';
+/* ========== 字数统计 ========== */
+document.getElementById('shopDesc') && document.getElementById('shopDesc').addEventListener('input',function(){
+  const el = document.getElementById('descCount');
+  if(el) el.textContent = this.value.length + '/200';
 });
 
+/* ========== 提交 ========== */
 function submitForm(){
-  if(selectedCats.length===0){alert('请至少选择一个品类');return;}
-
-  // 收集所有优惠券（兼容动态添加的券）
+  // 校验优惠券
   const couponItems = document.querySelectorAll('#couponList .coupon-item');
   const coupons = [];
   couponItems.forEach((item, idx) => {
-    const amtInput = item.querySelector('input[type="number"]');
     const allInputs = item.querySelectorAll('input[type="number"]');
     const amt = allInputs[0] ? allInputs[0].value.trim() : '';
     const min = allInputs[1] ? allInputs[1].value.trim() : '';
     const descInput = item.querySelector('input:not([type="number"])');
     const desc = descInput ? descInput.value.trim() : '';
-    
-    console.log('券'+(idx+1)+':', amt, min, '|', JSON.stringify({amt,min,descLen:(desc||'').length}));
     if(amt !== '' && min !== '') coupons.push({amount:Number(amt), minSpend:Number(min), desc:desc||'全场通用'});
   });
-  console.log('共收集到', coupons.length, '张有效券');
-  
+
   if(coupons.length===0){
     alert('请至少设置1张优惠券（需填写金额和门槛）');
-    // 高亮优惠券区域
     document.getElementById('couponList').scrollIntoView({behavior:'smooth'});
     document.getElementById('couponList').style.outline = '2px solid #E24B4A';
-    setTimeout(() => document.getElementById('couponList').style.outline='',2000);
+    setTimeout(()=>document.getElementById('couponList').style.outline='',2000);
+    return;
+  }
+
+  const verifyCode = document.getElementById('verifyCode').value.trim();
+  if(!verifyCode){
+    alert('请设置核销码');
+    document.getElementById('verifyCode').focus();
     return;
   }
 
   const shopData = {
     id: 'shop-' + Date.now(),
+    // 营业执照信息
+    license: uploadData.license[0] || '',
+    legalName: document.getElementById('legalName').value.trim(),
+    creditCode: document.getElementById('creditCode').value.trim(),
+    legalAddr: document.getElementById('legalAddr').value.trim(),
+    legalPerson: document.getElementById('legalPerson').value.trim(),
+    // 店铺信息
     name: document.getElementById('shopName').value.trim(),
     phone: document.getElementById('shopPhone').value.trim(),
     contact: document.getElementById('shopContact').value.trim(),
@@ -374,13 +552,18 @@ function submitForm(){
     hours: document.getElementById('shopHours').value.trim() || '10:00-22:00',
     avgSpend: Number(document.getElementById('shopAvg').value) || 25,
     cats: selectedCats,
+    description: document.getElementById('shopDesc').value.trim(),
+    // 照片
     photos: {
+      license: uploadData.license,
       facade: uploadData.facade,
       env: uploadData.env,
       product: uploadData.product
     },
+    // 优惠券
     coupons: coupons,
-    description: document.getElementById('shopDesc').value.trim(),
+    verifyCode: verifyCode,
+    // 状态
     status: 'pending',
     createdAt: new Date().toISOString()
   };
@@ -393,9 +576,11 @@ function submitForm(){
   // 显示成功
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('successPage').classList.add('active');
+  updateStepper(6);
   window.scrollTo(0,0);
 }
 
+/* ========== 初始化 ========== */
 initCatChecks();
 </script>
 </body>
